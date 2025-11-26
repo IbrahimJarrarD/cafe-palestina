@@ -1,0 +1,221 @@
+---
+import type { Language } from '../i18n/translations';
+import { t } from '../i18n/translations';
+
+interface Props {
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+const tr = t(lang);
+---
+
+<section class="newsletter-section" id="newsletter">
+  <div class="container">
+    <div class="newsletter-card">
+      <div class="newsletter-decoration">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="var(--olive)" stroke-width="1" fill="none" opacity="0.3">
+            <circle cx="100" cy="100" r="80"/>
+            <circle cx="100" cy="100" r="60"/>
+            <circle cx="100" cy="100" r="40"/>
+            <path d="M100 20 L100 180 M20 100 L180 100"/>
+            <path d="M43 43 L157 157 M157 43 L43 157"/>
+          </g>
+        </svg>
+      </div>
+      
+      <div class="newsletter-content">
+        <span class="newsletter-icon">📬</span>
+        <h2>{tr.newsletter.title}</h2>
+        <p>{tr.newsletter.description}</p>
+        
+        <form class="newsletter-form" id="newsletterForm">
+          <div class="form-group">
+            <input 
+              type="email" 
+              name="email"
+              placeholder={tr.newsletter.placeholder}
+              required
+              class="newsletter-input"
+            />
+            <button type="submit" class="newsletter-btn">
+              {tr.newsletter.button}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .newsletter-section {
+    padding: var(--space-2xl) 0;
+  }
+  
+  .newsletter-card {
+    position: relative;
+    background: linear-gradient(135deg, var(--pine) 0%, var(--pine-light) 100%);
+    border-radius: 24px;
+    padding: var(--space-3xl) var(--space-2xl);
+    overflow: hidden;
+  }
+  
+  .newsletter-decoration {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 250px;
+    height: 250px;
+    opacity: 0.15;
+  }
+  
+  :global([dir="rtl"]) .newsletter-decoration {
+    right: auto;
+    left: -50px;
+  }
+  
+  .newsletter-decoration svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .newsletter-content {
+    position: relative;
+    z-index: 1;
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .newsletter-icon {
+    display: block;
+    font-size: 2.5rem;
+    margin-bottom: var(--space-md);
+  }
+  
+  .newsletter-content h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: var(--space-md);
+  }
+  
+  .newsletter-content p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: var(--space-xl);
+    line-height: 1.6;
+  }
+  
+  .newsletter-form {
+    width: 100%;
+  }
+  
+  .form-group {
+    display: flex;
+    gap: var(--space-sm);
+    max-width: 450px;
+    margin: 0 auto;
+  }
+  
+  .newsletter-input {
+    flex: 1;
+    padding: var(--space-md) var(--space-lg);
+    font-size: 1rem;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--ink);
+    transition: all 0.2s;
+  }
+  
+  .newsletter-input::placeholder {
+    color: var(--ink-light);
+  }
+  
+  .newsletter-input:focus {
+    outline: none;
+    border-color: var(--olive-light);
+    box-shadow: 0 0 0 4px rgba(143, 177, 78, 0.2);
+  }
+  
+  .newsletter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    font-size: 0.95rem;
+    font-weight: 600;
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  
+  .newsletter-btn:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(212, 168, 83, 0.4);
+  }
+  
+  .newsletter-btn svg {
+    transition: transform 0.2s;
+  }
+  
+  .newsletter-btn:hover svg {
+    transform: translateX(4px);
+  }
+  
+  :global([dir="rtl"]) .newsletter-btn svg {
+    transform: scaleX(-1);
+  }
+  
+  :global([dir="rtl"]) .newsletter-btn:hover svg {
+    transform: scaleX(-1) translateX(-4px);
+  }
+  
+  @media (max-width: 600px) {
+    .form-group {
+      flex-direction: column;
+    }
+    
+    .newsletter-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  const form = document.getElementById('newsletterForm');
+  
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const formData = new FormData(form as HTMLFormElement);
+    const email = formData.get('email');
+    
+    // In a real app, this would send to a backend
+    console.log('Newsletter subscription:', email);
+    
+    // Show success message
+    const lang = document.documentElement.lang as 'de' | 'en' | 'ar';
+    const messages = {
+      de: 'Danke! Willkommen in unserer Community.',
+      en: 'Thank you! Welcome to our community.',
+      ar: 'شكراً! أهلاً بك في مجتمعنا.'
+    };
+    const message = messages[lang] || messages.en;
+    
+    alert(message);
+    (form as HTMLFormElement).reset();
+  });
+</script>
+

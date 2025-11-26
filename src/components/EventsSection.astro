@@ -1,0 +1,98 @@
+---
+import type { Language } from '../i18n/translations';
+import { t } from '../i18n/translations';
+import { events } from '../data/events';
+import EventCard from './EventCard.astro';
+import EventModal from './EventModal.svelte';
+
+interface Props {
+  lang: Language;
+}
+
+const { lang } = Astro.props;
+const tr = t(lang);
+---
+
+<section class="events-section" id="events">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label">📅 {tr.events.title}</span>
+      <h2 class="section-title">{tr.events.title}</h2>
+      <p class="section-subtitle">{tr.events.subtitle}</p>
+    </div>
+    
+    <div class="events-grid">
+      {events.map((event, index) => (
+        <EventCard event={event} lang={lang} index={index} />
+      ))}
+    </div>
+  </div>
+  
+  <EventModal client:load lang={lang} />
+</section>
+
+<style>
+  .events-section {
+    padding: var(--space-4xl) 0;
+    position: relative;
+  }
+  
+  .section-header {
+    text-align: center;
+    margin-bottom: var(--space-3xl);
+  }
+  
+  .section-label {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-md);
+    background: var(--sand);
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--olive);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--space-md);
+  }
+  
+  .section-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--pine);
+    margin-bottom: var(--space-md);
+  }
+  
+  .section-subtitle {
+    font-size: 1.1rem;
+    color: var(--ink-light);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-xl);
+  }
+  
+  @media (max-width: 768px) {
+    .events-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  // Event card click handler
+  document.querySelectorAll('.event-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const eventData = card.getAttribute('data-event');
+      if (eventData) {
+        window.dispatchEvent(new CustomEvent('open-event-modal', {
+          detail: JSON.parse(eventData)
+        }));
+      }
+    });
+  });
+</script>
+

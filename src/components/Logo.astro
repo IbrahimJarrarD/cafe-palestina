@@ -1,0 +1,28 @@
+---
+interface Props {
+  size?: number;
+}
+
+const { size = 48 } = Astro.props;
+---
+
+<img 
+  src="/logo.jpg" 
+  alt="Cafe Palestine Colonia"
+  class="logo-img"
+  width={size}
+  height={size}
+/>
+
+<style>
+  .logo-img {
+    flex-shrink: 0;
+    object-fit: contain;
+    border-radius: 4px;
+    transition: transform 0.3s var(--ease-spring);
+  }
+  
+  .logo-img:hover {
+    transform: scale(1.05);
+  }
+</style>

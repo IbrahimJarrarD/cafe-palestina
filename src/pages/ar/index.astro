@@ -1,0 +1,27 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Hero from '../../components/Hero.astro';
+import EventsSection from '../../components/EventsSection.astro';
+import AboutSection from '../../components/AboutSection.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import Footer from '../../components/Footer.astro';
+
+const lang = 'ar';
+---
+
+<Layout 
+  title="كافيه فلسطين كولونيا – الفعاليات الثقافية والمجتمع"
+  description="مركز ثقافي في كولن يحتفي بالعلاقة بين الثقافة الفلسطينية والألمانية. ورش عمل وقراءات وليالي أفلام والمزيد."
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <Hero lang={lang} />
+    <EventsSection lang={lang} />
+    <AboutSection lang={lang} />
+    <Newsletter lang={lang} />
+  </main>
+  <Footer lang={lang} />
+</Layout>
+
