@@ -1,6 +1,7 @@
 ---
 import type { Language } from '../i18n/translations';
 import { t } from '../i18n/translations';
+import { getPageContent, getContent, getSiteSettings, getSetting } from '../lib/content';
 
 interface Props {
   lang: Language;
@@ -8,20 +9,42 @@ interface Props {
 
 const { lang } = Astro.props;
 const tr = t(lang);
+
+// Fetch dynamic content
+const pageContent = await getPageContent();
+const settings = await getSiteSettings();
+
+// Get content from DB
+const aboutTitle = tr.about.title;
+const aboutText1 = getContent(pageContent, 'about_text_1', lang) || '';
+const aboutText2 = getContent(pageContent, 'about_text_2', lang) || '';
+const whyTitle = getContent(pageContent, 'about_why_title', lang) || '';
+const whyText = getContent(pageContent, 'about_why_text', lang) || '';
+
+// Get stats from settings
+const eventsCount = getSetting(settings, 'stats_events_count') || '100+';
+const visitorsCount = getSetting(settings, 'stats_visitors_count') || '5k+';
+
+// Stats labels
+const statsLabels = {
+  de: { events: 'Veranstaltungen', visitors: 'Besucher' },
+  en: { events: 'Events', visitors: 'Visitors' },
+  ar: { events: 'فعالية', visitors: 'زائر' },
+};
 ---
 
 <section class="about-section" id="about">
   <div class="container">
     <div class="about-grid">
       <div class="about-content">
-        <span class="section-label">🌿 {tr.about.title}</span>
-        <h2 class="about-title">{tr.about.title}</h2>
-        <p class="about-text">{tr.about.text1}</p>
-        <p class="about-text">{tr.about.text2}</p>
+        <span class="section-label">🌿 {aboutTitle}</span>
+        <h2 class="about-title">{aboutTitle}</h2>
+        <p class="about-text">{aboutText1}</p>
+        <p class="about-text">{aboutText2}</p>
         
         <div class="about-highlight">
-          <h3>{tr.about.whyTitle}</h3>
-          <p>{tr.about.whyText}</p>
+          <h3>{whyTitle}</h3>
+          <p>{whyText}</p>
         </div>
       </div>
       
@@ -32,12 +55,12 @@ const tr = t(lang);
         
         <div class="visual-stats">
           <div class="stat">
-            <span class="stat-number">100+</span>
-            <span class="stat-label">{{ de: 'Veranstaltungen', en: 'Events', ar: 'فعالية' }[lang]}</span>
+            <span class="stat-number">{eventsCount}</span>
+            <span class="stat-label">{statsLabels[lang].events}</span>
           </div>
           <div class="stat">
-            <span class="stat-number">5k+</span>
-            <span class="stat-label">{{ de: 'Besucher', en: 'Visitors', ar: 'زائر' }[lang]}</span>
+            <span class="stat-number">{visitorsCount}</span>
+            <span class="stat-label">{statsLabels[lang].visitors}</span>
           </div>
         </div>
       </div>
@@ -187,4 +210,3 @@ const tr = t(lang);
     }
   }
 </style>
-

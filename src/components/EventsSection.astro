@@ -1,7 +1,8 @@
 ---
 import type { Language } from '../i18n/translations';
 import { t } from '../i18n/translations';
-import { events } from '../data/events';
+import { getEvents, getEventTitle, getEventDescription, getCategoryName } from '../lib/events';
+import type { EventWithRelations } from '../lib/database.types';
 import EventCard from './EventCard.astro';
 import EventModal from './EventModal.svelte';
 
@@ -11,6 +12,9 @@ interface Props {
 
 const { lang } = Astro.props;
 const tr = t(lang);
+
+// Fetch events from Supabase
+const events = await getEvents();
 ---
 
 <section class="events-section" id="events">
@@ -21,11 +25,17 @@ const tr = t(lang);
       <p class="section-subtitle">{tr.events.subtitle}</p>
     </div>
     
-    <div class="events-grid">
-      {events.map((event, index) => (
-        <EventCard event={event} lang={lang} index={index} />
-      ))}
-    </div>
+    {events.length > 0 ? (
+      <div class="events-grid">
+        {events.map((event, index) => (
+          <EventCard event={event} lang={lang} index={index} />
+        ))}
+      </div>
+    ) : (
+      <div class="no-events">
+        <p>{lang === 'de' ? 'Keine kommenden Veranstaltungen' : lang === 'ar' ? 'لا توجد فعاليات قادمة' : 'No upcoming events'}</p>
+      </div>
+    )}
   </div>
   
   <EventModal client:load lang={lang} />
@@ -75,6 +85,18 @@ const tr = t(lang);
     gap: var(--space-xl);
   }
   
+  .no-events {
+    text-align: center;
+    padding: var(--space-4xl) var(--space-xl);
+    background: var(--sand-light);
+    border-radius: 16px;
+    color: var(--ink-light);
+  }
+  
+  .no-events p {
+    font-size: 1.1rem;
+  }
+  
   @media (max-width: 768px) {
     .events-grid {
       grid-template-columns: 1fr;
@@ -95,4 +117,3 @@ const tr = t(lang);
     });
   });
 </script>
-

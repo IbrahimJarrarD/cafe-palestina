@@ -1,0 +1,51 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import EventForm from '../../../components/admin/EventForm.svelte';
+import { supabase } from '../../../lib/supabase';
+
+// Fetch categories and image types for dropdowns
+const { data: categories } = await supabase
+  .from('categories')
+  .select('*')
+  .order('sort_order', { ascending: true });
+
+const { data: imageTypes } = await supabase
+  .from('image_types')
+  .select('*');
+---
+
+<AdminLayout title="Create Event" activeSection="events">
+  <div class="event-editor">
+    <div class="editor-header">
+      <a href="/admin/events" class="back-link">← Back to Events</a>
+    </div>
+    
+    <EventForm 
+      client:load 
+      categories={categories || []} 
+      imageTypes={imageTypes || []}
+      mode="create"
+    />
+  </div>
+</AdminLayout>
+
+<style>
+  .event-editor {
+    max-width: 900px;
+  }
+  
+  .editor-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .back-link {
+    color: var(--ink-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  
+  .back-link:hover {
+    color: var(--pine);
+  }
+</style>
+

@@ -1,19 +1,22 @@
 ---
 interface Props {
-  type: 'cooking' | 'reading' | 'film' | 'embroidery' | 'music';
+  type: string;
 }
 
 const { type } = Astro.props;
 
-const gradients: Record<typeof type, [string, string]> = {
+// Default gradients for different event types
+const gradients: Record<string, [string, string]> = {
   cooking: ['#6b8c42', '#8fb14e'],
   reading: ['#1a3d2e', '#2d5a47'],
   film: ['#2d5a47', '#6b8c42'],
   embroidery: ['#c75146', '#d4a853'],
   music: ['#d4a853', '#6b8c42'],
+  general: ['#1a3d2e', '#6b8c42'],
+  community: ['#4a7c59', '#8fb14e'],
 };
 
-const [color1, color2] = gradients[type];
+const [color1, color2] = gradients[type] || gradients.general;
 ---
 
 <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" class="event-image" preserveAspectRatio="xMidYMid slice">
@@ -32,14 +35,11 @@ const [color1, color2] = gradients[type];
   
   {type === 'cooking' && (
     <>
-      <!-- Bowl/Plate -->
       <ellipse cx="200" cy="120" rx="70" ry="25" fill="#f5f0e6" opacity="0.95"/>
       <ellipse cx="200" cy="115" rx="60" ry="20" fill="#e8dcc4"/>
-      <!-- Food elements -->
       <circle cx="180" cy="110" r="8" fill="#1a3d2e"/>
       <circle cx="200" cy="105" r="10" fill="#d4a853"/>
       <circle cx="220" cy="112" r="7" fill="#c75146"/>
-      <!-- Steam -->
       <path d="M185 85 Q190 70 185 55" stroke="white" stroke-width="2" fill="none" opacity="0.6"/>
       <path d="M200 80 Q205 65 200 50" stroke="white" stroke-width="2" fill="none" opacity="0.6"/>
       <path d="M215 85 Q220 70 215 55" stroke="white" stroke-width="2" fill="none" opacity="0.6"/>
@@ -48,17 +48,14 @@ const [color1, color2] = gradients[type];
   
   {type === 'reading' && (
     <>
-      <!-- Open book -->
       <path d="M120 140 Q200 160 280 140 L280 70 Q200 90 120 70 Z" fill="#f5f0e6" opacity="0.95"/>
       <line x1="200" y1="80" x2="200" y2="150" stroke="#1a3d2e" stroke-width="2" opacity="0.3"/>
-      <!-- Book pages -->
       <line x1="140" y1="85" x2="190" y2="90" stroke="#6b8c42" stroke-width="1.5" opacity="0.5"/>
       <line x1="140" y1="100" x2="190" y2="105" stroke="#6b8c42" stroke-width="1.5" opacity="0.5"/>
       <line x1="140" y1="115" x2="190" y2="120" stroke="#6b8c42" stroke-width="1.5" opacity="0.5"/>
       <line x1="210" y1="90" x2="260" y2="85" stroke="#6b8c42" stroke-width="1.5" opacity="0.5"/>
       <line x1="210" y1="105" x2="260" y2="100" stroke="#6b8c42" stroke-width="1.5" opacity="0.5"/>
       <line x1="210" y1="120" x2="260" y2="115" stroke="#6b8c42" stroke-width="1.5" opacity="0.5"/>
-      <!-- Candle -->
       <rect x="320" y="100" width="15" height="40" fill="#f5f0e6" rx="2"/>
       <ellipse cx="327" cy="95" rx="8" ry="12" fill="#d4a853"/>
       <ellipse cx="327" cy="88" rx="4" ry="8" fill="#c75146" opacity="0.8"/>
@@ -67,36 +64,29 @@ const [color1, color2] = gradients[type];
   
   {type === 'film' && (
     <>
-      <!-- Film reel -->
       <circle cx="200" cy="100" r="60" fill="none" stroke="#f5f0e6" stroke-width="8" opacity="0.9"/>
       <circle cx="200" cy="100" r="45" fill="none" stroke="#f5f0e6" stroke-width="4" opacity="0.6"/>
       <circle cx="200" cy="100" r="15" fill="#d4a853"/>
-      <!-- Film perforations -->
       <rect x="125" y="85" width="10" height="15" fill="#1a3d2e" rx="2"/>
       <rect x="125" y="105" width="10" height="15" fill="#1a3d2e" rx="2"/>
       <rect x="265" y="85" width="10" height="15" fill="#1a3d2e" rx="2"/>
       <rect x="265" y="105" width="10" height="15" fill="#1a3d2e" rx="2"/>
-      <!-- Play button -->
       <polygon points="192,85 192,115 215,100" fill="white" opacity="0.9"/>
     </>
   )}
   
   {type === 'embroidery' && (
     <>
-      <!-- Embroidery hoop -->
       <circle cx="200" cy="100" r="65" fill="none" stroke="#8b6f47" stroke-width="10"/>
       <circle cx="200" cy="100" r="55" fill="#f5f0e6" opacity="0.95"/>
-      <!-- Traditional pattern -->
       <path d="M170 100 L185 85 L200 100 L215 85 L230 100" stroke="#c75146" stroke-width="3" fill="none"/>
       <path d="M170 115 L185 100 L200 115 L215 100 L230 115" stroke="#1a3d2e" stroke-width="3" fill="none"/>
-      <!-- Cross stitches -->
       <g stroke="#6b8c42" stroke-width="2">
         <line x1="155" y1="90" x2="165" y2="100"/>
         <line x1="165" y1="90" x2="155" y2="100"/>
         <line x1="235" y1="90" x2="245" y2="100"/>
         <line x1="245" y1="90" x2="235" y2="100"/>
       </g>
-      <!-- Needle -->
       <line x1="260" y1="70" x2="280" y2="50" stroke="#d4a853" stroke-width="2"/>
       <circle cx="283" cy="47" r="4" fill="none" stroke="#d4a853" stroke-width="1.5"/>
     </>
@@ -104,21 +94,33 @@ const [color1, color2] = gradients[type];
   
   {type === 'music' && (
     <>
-      <!-- Oud shape -->
       <ellipse cx="200" cy="110" rx="50" ry="35" fill="#8b6f47"/>
       <ellipse cx="200" cy="110" rx="45" ry="30" fill="#a08060"/>
       <circle cx="200" cy="115" r="10" fill="#1a3d2e"/>
-      <!-- Neck -->
       <rect x="195" y="45" width="10" height="70" fill="#8b6f47"/>
-      <!-- Strings -->
       <line x1="197" y1="50" x2="197" y2="140" stroke="#d4a853" stroke-width="1"/>
       <line x1="200" y1="50" x2="200" y2="140" stroke="#d4a853" stroke-width="1"/>
       <line x1="203" y1="50" x2="203" y2="140" stroke="#d4a853" stroke-width="1"/>
-      <!-- Music notes -->
       <circle cx="280" cy="60" r="6" fill="white" opacity="0.8"/>
       <line x1="286" y1="60" x2="286" y2="35" stroke="white" stroke-width="2" opacity="0.8"/>
       <circle cx="310" cy="80" r="5" fill="white" opacity="0.6"/>
       <line x1="315" y1="80" x2="315" y2="60" stroke="white" stroke-width="2" opacity="0.6"/>
+    </>
+  )}
+  
+  {(type === 'general' || type === 'community' || !['cooking', 'reading', 'film', 'embroidery', 'music'].includes(type)) && (
+    <>
+      <!-- Olive branch design for general/community events -->
+      <g transform="translate(200, 100)">
+        <path d="M -60 0 Q -30 -20 0 0 Q 30 20 60 0" stroke="#f5f0e6" stroke-width="3" fill="none" opacity="0.9"/>
+        <ellipse cx="-45" cy="-10" rx="12" ry="20" fill="#f5f0e6" opacity="0.8" transform="rotate(-30 -45 -10)"/>
+        <ellipse cx="-20" cy="-15" rx="10" ry="16" fill="#f5f0e6" opacity="0.8" transform="rotate(-15 -20 -15)"/>
+        <ellipse cx="20" cy="15" rx="10" ry="16" fill="#f5f0e6" opacity="0.8" transform="rotate(15 20 15)"/>
+        <ellipse cx="45" cy="10" rx="12" ry="20" fill="#f5f0e6" opacity="0.8" transform="rotate(30 45 10)"/>
+        <circle cx="-35" cy="0" r="6" fill="#d4a853"/>
+        <circle cx="0" cy="5" r="5" fill="#d4a853"/>
+        <circle cx="35" cy="0" r="6" fill="#d4a853"/>
+      </g>
     </>
   )}
 </svg>
@@ -130,4 +132,3 @@ const [color1, color2] = gradients[type];
     object-fit: cover;
   }
 </style>
-

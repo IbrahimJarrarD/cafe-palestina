@@ -1,0 +1,30 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import UsersManager from '../../components/admin/UsersManager.svelte';
+---
+
+<AdminLayout title="Users" activeSection="users">
+  <div class="users-page">
+    <div class="page-header">
+      <p class="subtitle">Manage user roles and access</p>
+    </div>
+    
+    <UsersManager client:load />
+  </div>
+</AdminLayout>
+
+<style>
+  .users-page {
+    max-width: 800px;
+  }
+  
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .subtitle {
+    color: var(--ink-light);
+    font-size: 0.9rem;
+  }
+</style>
+

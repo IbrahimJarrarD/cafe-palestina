@@ -1,0 +1,294 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase } from '../../lib/supabase';
+
+// Fetch RSVPs with event info
+const { data: rsvps } = await supabase
+  .from('rsvps')
+  .select('*, events(id, title_en, title_de, date)')
+  .order('created_at', { ascending: false });
+
+// Group by event
+const rsvpsByEvent: Record<string, any[]> = {};
+(rsvps as any[] | null)?.forEach(rsvp => {
+  const eventId = rsvp.events?.id || 'unknown';
+  if (!rsvpsByEvent[eventId]) {
+    rsvpsByEvent[eventId] = [];
+  }
+  rsvpsByEvent[eventId].push(rsvp);
+});
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function getTotalGuests(eventRsvps: any[]) {
+  return eventRsvps.reduce((sum, r) => sum + (r.guests || 1), 0);
+}
+---
+
+<AdminLayout title="RSVPs" activeSection="rsvps">
+  <div class="rsvps-page">
+    <div class="page-header">
+      <p class="subtitle">{rsvps?.length || 0} total registrations</p>
+    </div>
+    
+    {Object.keys(rsvpsByEvent).length === 0 ? (
+      <div class="empty-state">
+        <p>No RSVPs yet</p>
+        <span>RSVPs will appear here when visitors sign up for events</span>
+      </div>
+    ) : (
+      Object.entries(rsvpsByEvent).map(([eventId, eventRsvps]) => {
+        const event = eventRsvps[0]?.events;
+        return (
+          <div class="event-rsvps">
+            <div class="event-header">
+              <div class="event-info">
+                <h3>{event?.title_en || 'Unknown Event'}</h3>
+                <span class="event-date">{event?.date ? formatDate(event.date) : ''}</span>
+              </div>
+              <div class="event-stats">
+                <span class="stat">{eventRsvps.length} RSVPs</span>
+                <span class="stat">{getTotalGuests(eventRsvps)} Guests</span>
+              </div>
+            </div>
+            
+            <div class="rsvp-table-container">
+              <table class="rsvp-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Guests</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {eventRsvps.map((rsvp: any) => (
+                    <tr class={rsvp.cancelled_at ? 'cancelled' : ''}>
+                      <td>
+                        <span class="rsvp-name">{rsvp.name}</span>
+                      </td>
+                      <td>
+                        <a href={`mailto:${rsvp.email}`} class="rsvp-email">{rsvp.email}</a>
+                      </td>
+                      <td>
+                        <span class="guests-count">{rsvp.guests}</span>
+                      </td>
+                      <td>
+                        {rsvp.message ? (
+                          <span class="rsvp-message" title={rsvp.message}>
+                            {rsvp.message.substring(0, 50)}{rsvp.message.length > 50 ? '...' : ''}
+                          </span>
+                        ) : (
+                          <span class="no-message">—</span>
+                        )}
+                      </td>
+                      <td>
+                        <span class="rsvp-date">{formatDate(rsvp.created_at)}</span>
+                      </td>
+                      <td>
+                        {rsvp.cancelled_at ? (
+                          <span class="status-badge cancelled">Cancelled</span>
+                        ) : rsvp.confirmed_at ? (
+                          <span class="status-badge confirmed">Confirmed</span>
+                        ) : (
+                          <span class="status-badge pending">Pending</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })
+    )}
+  </div>
+</AdminLayout>
+
+<style>
+  .rsvps-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .page-header {
+    margin-bottom: 0.5rem;
+  }
+  
+  .subtitle {
+    color: var(--ink-light);
+    font-size: 0.9rem;
+  }
+  
+  .event-rsvps {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  
+  .event-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    background: var(--sand-light);
+    border-bottom: 1px solid var(--sand);
+  }
+  
+  .event-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--pine);
+    margin: 0;
+  }
+  
+  .event-date {
+    font-size: 0.85rem;
+    color: var(--ink-light);
+  }
+  
+  .event-stats {
+    display: flex;
+    gap: 1.5rem;
+  }
+  
+  .stat {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--olive);
+  }
+  
+  .rsvp-table-container {
+    overflow-x: auto;
+  }
+  
+  .rsvp-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .rsvp-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    background: var(--cream);
+    border-bottom: 1px solid var(--sand);
+  }
+  
+  .rsvp-table td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--sand-light);
+    font-size: 0.9rem;
+  }
+  
+  .rsvp-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .rsvp-table tr.cancelled {
+    opacity: 0.5;
+  }
+  
+  .rsvp-name {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  
+  .rsvp-email {
+    color: var(--olive);
+    text-decoration: none;
+  }
+  
+  .rsvp-email:hover {
+    text-decoration: underline;
+  }
+  
+  .guests-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--sand-light);
+    border-radius: 6px;
+    font-weight: 600;
+    color: var(--pine);
+  }
+  
+  .rsvp-message {
+    color: var(--ink-light);
+    cursor: help;
+  }
+  
+  .no-message {
+    color: var(--sand);
+  }
+  
+  .rsvp-date {
+    color: var(--ink-light);
+    font-size: 0.8rem;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 100px;
+  }
+  
+  .status-badge.confirmed {
+    background: #dcfce7;
+    color: #166534;
+  }
+  
+  .status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .status-badge.cancelled {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+  
+  .empty-state {
+    background: white;
+    border-radius: 12px;
+    padding: 4rem 2rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  
+  .empty-state p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+  
+  .empty-state span {
+    color: var(--ink-light);
+    font-size: 0.9rem;
+  }
+</style>
+

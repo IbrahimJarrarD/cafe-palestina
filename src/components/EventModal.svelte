@@ -2,12 +2,32 @@
   import { onMount, onDestroy } from 'svelte';
   import type { Language } from '../i18n/translations';
   import { t } from '../i18n/translations';
-  import type { Event } from '../data/events';
   
   export let lang: Language;
   
+  // Simplified event data from card
+  interface ModalEvent {
+    id: string;
+    slug: string;
+    date: string;
+    time: string;
+    location: string;
+    address: string;
+    title_de: string;
+    title_en: string;
+    title_ar: string;
+    description_de: string;
+    description_en: string;
+    description_ar: string;
+    category_name_de: string;
+    category_name_en: string;
+    category_name_ar: string;
+    category_icon: string;
+    image_slug: string;
+  }
+  
   let isOpen = false;
-  let event: Event | null = null;
+  let event: ModalEvent | null = null;
   
   $: tr = t(lang);
   
@@ -18,9 +38,11 @@
     { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
   ) : '';
   
-  $: categoryLabel = event ? tr.categories[event.category as keyof typeof tr.categories] : '';
+  $: title = event ? (event[`title_${lang}` as keyof ModalEvent] as string) || event.title_en : '';
+  $: description = event ? (event[`description_${lang}` as keyof ModalEvent] as string) || event.description_en : '';
+  $: categoryName = event ? (event[`category_name_${lang}` as keyof ModalEvent] as string) || event.category_name_en : '';
   
-  function openModal(e: CustomEvent<Event>) {
+  function openModal(e: CustomEvent<ModalEvent>) {
     event = e.detail;
     isOpen = true;
     document.body.style.overflow = 'hidden';
@@ -52,7 +74,7 @@
     
     const formatDate = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     
-    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title[lang])}&dates=${formatDate(startDate)}/${formatDate(endDate)}&location=${encodeURIComponent(event.address)}&details=${encodeURIComponent(event.description[lang])}`;
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatDate(startDate)}/${formatDate(endDate)}&location=${encodeURIComponent(event.address)}&details=${encodeURIComponent(description)}`;
     
     window.open(url, '_blank');
   }
@@ -66,11 +88,11 @@
   function shareEvent() {
     if (!event) return;
     
-    const text = `${event.title[lang]} - ${formattedDate}\n${event.description[lang]}`;
+    const text = `${title} - ${formattedDate}\n${description}`;
     
     if (navigator.share) {
       navigator.share({
-        title: event.title[lang],
+        title: title,
         text: text,
         url: window.location.href
       });
@@ -96,7 +118,7 @@
 
 {#if isOpen && event}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions a11y_click_events_have_key_events -->
-<div class="modal-backdrop" on:click={handleBackdropClick} on:keydown={handleKeydown} role="dialog" aria-modal="true" tabindex="-1">
+  <div class="modal-backdrop" on:click={handleBackdropClick} on:keydown={handleKeydown} role="dialog" aria-modal="true" tabindex="-1">
     <div class="modal-content">
       <button class="modal-close" on:click={closeModal} aria-label="Close">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -106,8 +128,11 @@
       </button>
       
       <div class="modal-header">
-        <span class="modal-badge">{categoryLabel}</span>
-        <h2 class="modal-title">{event.title[lang]}</h2>
+        <span class="modal-badge">
+          <span class="badge-icon">{event.category_icon}</span>
+          {categoryName}
+        </span>
+        <h2 class="modal-title">{title}</h2>
       </div>
       
       <div class="modal-meta">
@@ -154,7 +179,7 @@
         </div>
       </div>
       
-      <p class="modal-description">{event.description[lang]}</p>
+      <p class="modal-description">{description}</p>
       
       <div class="modal-actions">
         <button class="action-btn action-primary" on:click={addToCalendar}>
@@ -267,7 +292,9 @@
   }
   
   .modal-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     padding: var(--space-xs) var(--space-md);
     background: var(--sand);
     border-radius: 100px;
@@ -277,6 +304,10 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: var(--space-md);
+  }
+  
+  .badge-icon {
+    font-size: 0.9rem;
   }
   
   .modal-title {
@@ -410,4 +441,3 @@
     }
   }
 </style>
-

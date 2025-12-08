@@ -1,0 +1,36 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import ContentEditor from '../../components/admin/ContentEditor.svelte';
+import { supabase } from '../../lib/supabase';
+
+const { data: content } = await supabase
+  .from('page_content')
+  .select('*')
+  .order('key', { ascending: true });
+---
+
+<AdminLayout title="Page Content" activeSection="content">
+  <div class="content-page">
+    <div class="page-header">
+      <p class="subtitle">Edit text content across the website</p>
+    </div>
+    
+    <ContentEditor client:load content={content || []} />
+  </div>
+</AdminLayout>
+
+<style>
+  .content-page {
+    max-width: 900px;
+  }
+  
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .subtitle {
+    color: var(--ink-light);
+    font-size: 0.9rem;
+  }
+</style>
+

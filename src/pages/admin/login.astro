@@ -1,0 +1,272 @@
+---
+import { getSession } from '../../lib/auth';
+
+// Redirect if already logged in
+const session = await getSession();
+if (session) {
+  return Astro.redirect('/admin');
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin Login | Cafe Palestine Colonia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <img src="/logo.jpg" alt="Cafe Palestine" class="login-logo">
+        <h1>Admin Login</h1>
+        <p>Sign in to manage Cafe Palestine Colonia</p>
+      </div>
+      
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            required 
+            placeholder="admin@cafepalestine.de"
+            autocomplete="email"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            required 
+            placeholder="••••••••"
+            autocomplete="current-password"
+          >
+        </div>
+        
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        
+        <button type="submit" class="login-btn" id="submitBtn">
+          <span class="btn-text">Sign In</span>
+          <span class="btn-loading" style="display: none;">Signing in...</span>
+        </button>
+      </form>
+      
+      <div class="login-footer">
+        <p>Don't have an account? <a href="/admin/signup">Sign up</a></p>
+        <a href="/" class="back-link">← Back to website</a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    import { signIn } from '../../lib/auth';
+    
+    const form = document.getElementById('loginForm') as HTMLFormElement;
+    const errorDiv = document.getElementById('errorMessage') as HTMLDivElement;
+    const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+    const btnText = submitBtn.querySelector('.btn-text') as HTMLSpanElement;
+    const btnLoading = submitBtn.querySelector('.btn-loading') as HTMLSpanElement;
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = (document.getElementById('email') as HTMLInputElement).value;
+      const password = (document.getElementById('password') as HTMLInputElement).value;
+      
+      // Show loading
+      btnText.style.display = 'none';
+      btnLoading.style.display = 'inline';
+      submitBtn.disabled = true;
+      errorDiv.style.display = 'none';
+      
+      const result = await signIn(email, password);
+      
+      if (result.success) {
+        window.location.href = '/admin';
+      } else {
+        errorDiv.textContent = result.error || 'Invalid email or password';
+        errorDiv.style.display = 'block';
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --pine: #1a3d2e;
+    --pine-light: #2d5a47;
+    --olive: #6b8c42;
+    --sand: #e8dcc4;
+    --sand-light: #f5f0e6;
+    --cream: #faf8f4;
+    --white: #ffffff;
+    --ink: #1c1c1c;
+    --ink-light: #6b7280;
+    --red: #dc2626;
+  }
+  
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, var(--pine) 0%, var(--pine-light) 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  
+  .login-container {
+    width: 100%;
+    max-width: 420px;
+  }
+  
+  .login-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+  
+  .login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .login-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .login-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--pine);
+    margin-bottom: 0.5rem;
+  }
+  
+  .login-header p {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+  }
+  
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .form-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  
+  .form-group input {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    border: 2px solid var(--sand);
+    border-radius: 10px;
+    transition: all 0.2s;
+    background: var(--cream);
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--olive);
+    background: var(--white);
+  }
+  
+  .form-group input::placeholder {
+    color: var(--ink-light);
+    opacity: 0.6;
+  }
+  
+  .error-message {
+    padding: 0.875rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: var(--red);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+  
+  .login-btn {
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--pine) 0%, var(--pine-light) 100%);
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+  }
+  
+  .login-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(26, 61, 46, 0.3);
+  }
+  
+  .login-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .login-footer {
+    margin-top: 2rem;
+    text-align: center;
+  }
+  
+  .login-footer p {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    margin-bottom: 1rem;
+  }
+  
+  .login-footer a {
+    color: var(--pine);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .login-footer a:hover {
+    text-decoration: underline;
+  }
+  
+  .back-link {
+    font-size: 0.85rem;
+    color: var(--ink-light) !important;
+  }
+</style>
+

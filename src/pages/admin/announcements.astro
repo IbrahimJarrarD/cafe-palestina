@@ -1,0 +1,46 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import AnnouncementEditor from '../../components/admin/AnnouncementEditor.svelte';
+import { supabase } from '../../lib/supabase';
+
+const { data: announcements } = await supabase
+  .from('announcements')
+  .select('*')
+  .order('priority', { ascending: false });
+
+const { data: events } = await supabase
+  .from('events')
+  .select('id, title_en')
+  .gte('date', new Date().toISOString().split('T')[0])
+  .order('date', { ascending: true });
+---
+
+<AdminLayout title="Announcements" activeSection="announcements">
+  <div class="announcements-page">
+    <div class="page-header">
+      <p class="subtitle">Manage the announcement banner on the homepage</p>
+    </div>
+    
+    <AnnouncementEditor 
+      client:load 
+      announcements={announcements || []} 
+      events={events || []}
+    />
+  </div>
+</AdminLayout>
+
+<style>
+  .announcements-page {
+    max-width: 800px;
+  }
+  
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .subtitle {
+    color: var(--ink-light);
+    font-size: 0.9rem;
+  }
+</style>
+

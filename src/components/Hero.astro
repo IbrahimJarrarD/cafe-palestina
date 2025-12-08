@@ -1,6 +1,7 @@
 ---
 import type { Language } from '../i18n/translations';
 import { t } from '../i18n/translations';
+import { getActiveAnnouncement, getAnnouncementText, getPageContent, getContent } from '../lib/content';
 
 interface Props {
   lang: Language;
@@ -8,6 +9,22 @@ interface Props {
 
 const { lang } = Astro.props;
 const tr = t(lang);
+
+// Fetch dynamic content
+const announcement = await getActiveAnnouncement();
+const pageContent = await getPageContent();
+
+// Get announcement data
+const announcementText = announcement ? getAnnouncementText(announcement, lang) : '';
+const announcementIcon = announcement?.icon || '🌿';
+const announcementLink = announcement?.link_url || '#events';
+const isExternalLink = announcement?.link_type === 'external';
+
+// Get hero content from DB
+const heroTitle = getContent(pageContent, 'hero_title', lang) || '';
+const heroSubtitle = getContent(pageContent, 'hero_subtitle', lang) || '';
+const poemText = getContent(pageContent, 'poem_text', lang) || '';
+const poemAuthor = getContent(pageContent, 'poem_author', lang) || '';
 ---
 
 <section class="hero" id="home">
@@ -17,13 +34,21 @@ const tr = t(lang);
   </div>
   
   <div class="container hero-content">
-    <div class="hero-badge">
-      <span class="badge-icon">🌿</span>
-      <span>{tr.info.schedule}</span>
-    </div>
+    <a 
+      href={announcementLink} 
+      class="hero-badge"
+      target={isExternalLink ? '_blank' : undefined}
+      rel={isExternalLink ? 'noopener' : undefined}
+    >
+      <span class="badge-icon">{announcementIcon}</span>
+      <span>{announcementText}</span>
+      <svg class="badge-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
     
-    <h1 class="hero-title">{tr.hero.title}</h1>
-    <p class="hero-subtitle">{tr.hero.subtitle}</p>
+    <h1 class="hero-title">{heroTitle}</h1>
+    <p class="hero-subtitle">{heroSubtitle}</p>
     
     <div class="hero-cta">
       <a href="#events" class="btn btn-primary">
@@ -37,8 +62,8 @@ const tr = t(lang);
     
     <div class="hero-poem">
       <blockquote>
-        <p>{tr.poem}</p>
-        <footer>{tr.poemAuthor}</footer>
+        <p>{poemText}</p>
+        <footer>{poemAuthor}</footer>
       </blockquote>
     </div>
   </div>
@@ -110,10 +135,40 @@ const tr = t(lang);
     margin-bottom: var(--space-xl);
     box-shadow: 0 4px 20px rgba(26, 61, 46, 0.06);
     animation: fadeInUp 0.6s var(--ease-out) 0.1s both;
+    text-decoration: none;
+    transition: all 0.3s var(--ease-out);
+    cursor: pointer;
+  }
+  
+  .hero-badge:hover {
+    background: var(--sand-light);
+    border-color: var(--olive);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(26, 61, 46, 0.12);
   }
   
   .badge-icon {
     font-size: 1rem;
+  }
+  
+  .badge-arrow {
+    opacity: 0;
+    transform: translateX(-5px);
+    transition: all 0.3s var(--ease-out);
+    color: var(--olive);
+  }
+  
+  .hero-badge:hover .badge-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  :global([dir="rtl"]) .badge-arrow {
+    transform: scaleX(-1) translateX(5px);
+  }
+  
+  :global([dir="rtl"]) .hero-badge:hover .badge-arrow {
+    transform: scaleX(-1) translateX(0);
   }
   
   .hero-title {
@@ -280,4 +335,3 @@ const tr = t(lang);
     }
   }
 </style>
-
