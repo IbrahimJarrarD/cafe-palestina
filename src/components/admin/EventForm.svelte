@@ -1,5 +1,6 @@
 <script lang="ts">
   import { supabase } from '../../lib/supabase';
+  import RichTextEditor from './RichTextEditor.svelte';
   
   export let event: any = null;
   export let categories: any[] = [];
@@ -23,6 +24,7 @@
   let maxAttendees: number | null = event?.max_attendees || null;
   let isPublished = event?.is_published ?? true;
   let imageUrl = event?.image_url || '';
+  let videoUrl = event?.video_url || '';
   
   // UI state
   let saving = false;
@@ -32,6 +34,31 @@
   let imageFile: File | null = null;
   let imagePreview = imageUrl;
   
+  // Video embed helper
+  function getEmbedHtml(url: string): string {
+    if (!url) return '';
+    try {
+      // YouTube
+      let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+      if (match) {
+        return `<iframe width="100%" height="220" src="https://www.youtube.com/embed/${match[1]}" frameborder="0" allowfullscreen style="border-radius:8px"></iframe>`;
+      }
+      // Vimeo
+      match = url.match(/vimeo\.com\/(\d+)/);
+      if (match) {
+        return `<iframe width="100%" height="220" src="https://player.vimeo.com/video/${match[1]}" frameborder="0" allowfullscreen style="border-radius:8px"></iframe>`;
+      }
+      // Google Drive
+      match = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) {
+        return `<iframe width="100%" height="220" src="https://drive.google.com/file/d/${match[1]}/preview" frameborder="0" allowfullscreen style="border-radius:8px"></iframe>`;
+      }
+      return `<p style="color:#999;font-size:0.85rem">Unsupported URL format. Use YouTube, Vimeo, or Google Drive links.</p>`;
+    } catch {
+      return '';
+    }
+  }
+
   // Auto-generate slug from English title
   function generateSlug() {
     if (!slug || slug === generateSlugFrom(event?.title_en || '')) {
@@ -131,6 +158,7 @@
         max_attendees: maxAttendees,
         is_published: isPublished,
         image_url: finalImageUrl || null,
+        video_url: videoUrl || null,
       };
       
       if (mode === 'create') {
@@ -152,9 +180,10 @@
         
         if (updateError) throw updateError;
         
-        success = 'Event updated successfully!';
+        success = 'Saved!';
         imageUrl = finalImageUrl || '';
         imageFile = null;
+        setTimeout(() => { success = ''; }, 3000);
       }
     } catch (err: any) {
       console.error('Save error:', err);
@@ -166,14 +195,6 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit} class="event-form">
-  {#if error}
-    <div class="alert alert-error">{error}</div>
-  {/if}
-  
-  {#if success}
-    <div class="alert alert-success">{success}</div>
-  {/if}
-  
   <!-- Image Upload Section -->
   <div class="form-section">
     <h3>Event Image</h3>
@@ -299,6 +320,27 @@
     </div>
   </div>
   
+  <!-- Video URL -->
+  <div class="form-section">
+    <h3>Video</h3>
+    <div class="form-group">
+      <label for="videoUrl">Video URL</label>
+      <input 
+        type="url" 
+        id="videoUrl" 
+        bind:value={videoUrl}
+        placeholder="YouTube, Vimeo, or Google Drive link"
+      />
+      <p class="form-hint">Paste a YouTube, Vimeo, or Google Drive video link. It will be embedded in the event page.</p>
+    </div>
+    {#if videoUrl}
+      <div class="video-preview">
+        <p class="form-hint">Preview:</p>
+        {@html getEmbedHtml(videoUrl)}
+      </div>
+    {/if}
+  </div>
+
   <!-- Multilingual Content -->
   <div class="form-section">
     <h3>Content (German) 🇩🇪</h3>
@@ -315,13 +357,11 @@
     </div>
     
     <div class="form-group">
-      <label for="descriptionDe">Description</label>
-      <textarea 
-        id="descriptionDe" 
+      <span class="form-label">Description</span>
+      <RichTextEditor
         bind:value={descriptionDe}
-        placeholder="Event description in German..."
-        rows="4"
-      ></textarea>
+        placeholder="Beschreibung auf Deutsch..."
+      />
     </div>
   </div>
   
@@ -341,13 +381,11 @@
     </div>
     
     <div class="form-group">
-      <label for="descriptionEn">Description</label>
-      <textarea 
-        id="descriptionEn" 
+      <span class="form-label">Description</span>
+      <RichTextEditor
         bind:value={descriptionEn}
-        placeholder="Event description in English..."
-        rows="4"
-      ></textarea>
+        placeholder="Description in English..."
+      />
     </div>
   </div>
   
@@ -366,18 +404,23 @@
     </div>
     
     <div class="form-group" dir="rtl">
-      <label for="descriptionAr">Description</label>
-      <textarea 
-        id="descriptionAr" 
+      <span class="form-label">Description</span>
+      <RichTextEditor
         bind:value={descriptionAr}
         placeholder="وصف الحدث بالعربية..."
-        rows="4"
-      ></textarea>
+        dir="rtl"
+      />
     </div>
   </div>
   
   <!-- Actions -->
   <div class="form-actions">
+    {#if error}
+      <span class="inline-error">{error}</span>
+    {/if}
+    {#if success}
+      <span class="inline-success">{success}</span>
+    {/if}
     <a href="/admin/events" class="btn btn-secondary">Cancel</a>
     <button type="submit" class="btn btn-primary" disabled={saving || uploadingImage}>
       {#if saving || uploadingImage}
@@ -396,22 +439,26 @@
     gap: 2rem;
   }
   
-  .alert {
-    padding: 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-  }
-  
-  .alert-error {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #dc2626;
-  }
-  
-  .alert-success {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
+  .inline-success {
+    font-size: 0.85rem;
+    font-weight: 500;
     color: #16a34a;
+    margin-right: auto;
+    animation: fadeInOut 3s ease forwards;
+  }
+
+  .inline-error {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #dc2626;
+    margin-right: auto;
+  }
+
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(4px); }
+    15% { opacity: 1; transform: translateY(0); }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
   }
   
   .form-section {
@@ -448,14 +495,14 @@
     margin-bottom: 0;
   }
   
-  .form-group label {
+  .form-group label,
+  .form-label {
     font-size: 0.85rem;
     font-weight: 500;
     color: var(--ink);
   }
   
   .form-group input,
-  .form-group textarea,
   .form-group select {
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
@@ -467,20 +514,13 @@
   }
   
   .form-group input:focus,
-  .form-group textarea:focus,
   .form-group select:focus {
     outline: none;
     border-color: var(--olive);
     background: white;
   }
   
-  .form-group textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-  
-  .form-group[dir="rtl"] input,
-  .form-group[dir="rtl"] textarea {
+  .form-group[dir="rtl"] input {
     text-align: right;
   }
   
@@ -626,6 +666,13 @@
     background: var(--sand-light);
   }
   
+  .video-preview {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--sand-light, #f8f6f0);
+    border-radius: 8px;
+  }
+
   @media (max-width: 768px) {
     .form-row {
       grid-template-columns: 1fr;

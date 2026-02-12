@@ -24,6 +24,7 @@
     category_name_ar: string;
     category_icon: string;
     image_slug: string;
+    video_url?: string;
   }
   
   let isOpen = false;
@@ -41,6 +42,25 @@
   $: title = event ? (event[`title_${lang}` as keyof ModalEvent] as string) || event.title_en : '';
   $: description = event ? (event[`description_${lang}` as keyof ModalEvent] as string) || event.description_en : '';
   $: categoryName = event ? (event[`category_name_${lang}` as keyof ModalEvent] as string) || event.category_name_en : '';
+  $: videoEmbedUrl = event?.video_url ? getVideoEmbedUrl(event.video_url) : null;
+
+  function getVideoEmbedUrl(url: string): string | null {
+    if (!url) return null;
+    try {
+      // YouTube
+      let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+      if (match) return `https://www.youtube.com/embed/${match[1]}`;
+      // Vimeo
+      match = url.match(/vimeo\.com\/(\d+)/);
+      if (match) return `https://player.vimeo.com/video/${match[1]}`;
+      // Google Drive
+      match = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) return `https://drive.google.com/file/d/${match[1]}/preview`;
+      return null;
+    } catch {
+      return null;
+    }
+  }
   
   function openModal(e: CustomEvent<ModalEvent>) {
     event = e.detail;
@@ -146,7 +166,7 @@
             </svg>
           </div>
           <div class="meta-content">
-            <span class="meta-label">{tr.events.date}</span>
+            <span class="meta-label">{tr.modal.date}</span>
             <span class="meta-value">{formattedDate}</span>
           </div>
         </div>
@@ -159,7 +179,7 @@
             </svg>
           </div>
           <div class="meta-content">
-            <span class="meta-label">{tr.events.time}</span>
+            <span class="meta-label">{tr.modal.time}</span>
             <span class="meta-value">{event.time}</span>
           </div>
         </div>
@@ -172,14 +192,26 @@
             </svg>
           </div>
           <div class="meta-content">
-            <span class="meta-label">{tr.events.location}</span>
+            <span class="meta-label">{tr.modal.location}</span>
             <span class="meta-value">{event.location}</span>
             <span class="meta-address">{event.address}</span>
           </div>
         </div>
       </div>
       
-      <p class="modal-description">{description}</p>
+      {#if videoEmbedUrl}
+        <div class="modal-video">
+          <iframe
+            src={videoEmbedUrl}
+            title="Event video"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      {/if}
+      
+      <div class="modal-description">{@html description}</div>
       
       <div class="modal-actions">
         <button class="action-btn action-primary" on:click={addToCalendar}>
@@ -191,7 +223,7 @@
             <line x1="12" y1="14" x2="12" y2="18"/>
             <line x1="10" y1="16" x2="14" y2="16"/>
           </svg>
-          {tr.events.addToCalendar}
+          {tr.modal.calendar}
         </button>
         
         <button class="action-btn action-secondary" on:click={openInMaps}>
@@ -200,7 +232,7 @@
             <line x1="9" y1="3" x2="9" y2="18"/>
             <line x1="15" y1="6" x2="15" y2="21"/>
           </svg>
-          {tr.events.openMaps}
+          {tr.modal.maps}
         </button>
         
         <button class="action-btn action-tertiary" on:click={shareEvent}>
@@ -211,7 +243,7 @@
             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
           </svg>
-          {tr.events.share}
+          {tr.modal.share}
         </button>
       </div>
     </div>
@@ -369,11 +401,58 @@
     color: var(--ink-light);
   }
   
+  .modal-video {
+    margin-bottom: var(--space-xl);
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+  }
+
+  .modal-video iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
   .modal-description {
     font-size: 1rem;
     line-height: 1.7;
     color: var(--ink-light);
     margin-bottom: var(--space-xl);
+  }
+
+  .modal-description :global(h2) {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--pine);
+    margin: 1rem 0 0.5rem;
+  }
+
+  .modal-description :global(h3) {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--pine);
+    margin: 0.75rem 0 0.35rem;
+  }
+
+  .modal-description :global(p) {
+    margin: 0.5rem 0;
+  }
+
+  .modal-description :global(ul),
+  .modal-description :global(ol) {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .modal-description :global(a) {
+    color: var(--olive);
+    text-decoration: underline;
+  }
+
+  .modal-description :global(strong) {
+    font-weight: 600;
+    color: var(--ink);
   }
   
   .modal-actions {

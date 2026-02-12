@@ -53,6 +53,7 @@ const eventForModal = {
   category_icon: categoryIcon,
   image_url: imageUrl,
   image_slug: imageSlug,
+  video_url: event.video_url || '',
 };
 ---
 
@@ -102,7 +103,7 @@ const eventForModal = {
       </div>
     </div>
     
-    <p class="card-description">{description}</p>
+    <div class="card-description" set:html={description} />
     
     <button class="card-btn" data-open-modal>
       {tr.events.learnMore}
@@ -230,6 +231,24 @@ const eventForModal = {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .card-description :global(h2),
+  .card-description :global(h3) {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
+    display: inline;
+  }
+
+  .card-description :global(p) {
+    margin: 0;
+  }
+
+  .card-description :global(ul),
+  .card-description :global(ol) {
+    margin: 0;
+    padding-left: 1rem;
   }
   
   .card-btn {

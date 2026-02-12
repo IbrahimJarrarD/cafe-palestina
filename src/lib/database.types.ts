@@ -51,7 +51,8 @@ export interface Database {
           location: string;
           address: string;
           image_type_id: string | null;
-          image_url: string | null; // NEW: uploaded image
+          image_url: string | null;
+          video_url: string | null;
           title_de: string;
           title_en: string;
           title_ar: string;
