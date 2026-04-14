@@ -39,6 +39,8 @@ export const translations = {
       date: 'Datum',
       time: 'Uhrzeit',
       location: 'Ort',
+      downloadPdf: 'PDF Einladung',
+      downloadInsta: 'Instagram Bild',
     },
     
     // Categories
@@ -108,6 +110,8 @@ export const translations = {
       date: 'Date',
       time: 'Time',
       location: 'Location',
+      downloadPdf: 'PDF Invitation',
+      downloadInsta: 'Instagram Image',
     },
     
     categories: {
@@ -173,6 +177,8 @@ export const translations = {
       date: 'التاريخ',
       time: 'الوقت',
       location: 'الموقع',
+      downloadPdf: 'دعوة PDF',
+      downloadInsta: 'صورة انستغرام',
     },
     
     categories: {

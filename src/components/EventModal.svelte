@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import type { Language } from '../i18n/translations';
   import { t } from '../i18n/translations';
+  import EventExport from './EventExport.svelte';
   
   export let lang: Language;
   
@@ -24,11 +25,13 @@
     category_name_ar: string;
     category_icon: string;
     image_slug: string;
+    image_url?: string;
     video_url?: string;
   }
   
   let isOpen = false;
   let event: ModalEvent | null = null;
+  let exportComponent: EventExport;
   
   $: tr = t(lang);
   
@@ -246,8 +249,30 @@
           {tr.modal.share}
         </button>
       </div>
+
+      <div class="modal-exports">
+        <button class="export-btn" on:click={() => exportComponent?.exportPDF()}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <polyline points="9 15 12 18 15 15"/>
+          </svg>
+          {tr.modal.downloadPdf}
+        </button>
+        <button class="export-btn" on:click={() => exportComponent?.exportInstagram()}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+          </svg>
+          {tr.modal.downloadInsta}
+        </button>
+      </div>
     </div>
   </div>
+
+  <EventExport bind:this={exportComponent} {event} {lang} />
 {/if}
 
 <style>
@@ -513,6 +538,37 @@
     background: var(--gold-light);
   }
   
+  .modal-exports {
+    display: flex;
+    gap: var(--space-sm);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--sand);
+    margin-top: var(--space-sm);
+  }
+
+  .export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ink-light);
+    background: transparent;
+    border: 1px solid var(--sand);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .export-btn:hover {
+    background: var(--sand-light);
+    border-color: var(--olive);
+    color: var(--pine);
+  }
+
   @media (max-width: 480px) {
     .modal-content {
       padding: var(--space-xl);
