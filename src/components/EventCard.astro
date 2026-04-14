@@ -66,7 +66,7 @@ const eventForModal = {
     {imageUrl ? (
       <img src={imageUrl} alt={title} class="event-photo" loading="lazy" />
     ) : (
-      <EventImage type={imageSlug} />
+      <EventImage icon={categoryIcon} color={categoryColor} type={imageSlug} />
     )}
     <span class="card-badge">
       <span class="badge-icon">{categoryIcon}</span>

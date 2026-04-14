@@ -454,6 +454,13 @@
     font-weight: 600;
     color: var(--ink);
   }
+
+  .modal-description :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 0.5rem 0;
+  }
   
   .modal-actions {
     display: flex;
