@@ -43,9 +43,28 @@
     return div.textContent || div.innerText || '';
   }
 
+  function extractSpeaker(html: string): string | null {
+    const text = stripHtml(html);
+    const patterns = [
+      /(?:Dr\.\s*)?(?:Prof\.\s*)?[A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß-]+){1,3}/,
+    ];
+    const strongMatch = html.match(/<strong>([^<]*(?:Dr\.|Prof\.)[^<]*)<\/strong>/);
+    if (strongMatch) return strongMatch[1].trim();
+    const h2Match = html.match(/<h2>([^<]*(?:Dr\.|Prof\.)[^<]*)<\/h2>/);
+    if (h2Match) return h2Match[1].trim();
+    return null;
+  }
+
   $: descriptionHtml = event ? (event[`description_${lang}` as keyof ExportEvent] as string) || event.description_en : '';
   $: descriptionPlain = descriptionHtml ? stripHtml(descriptionHtml) : '';
-  $: descriptionTrimmed = descriptionPlain.length > 500 ? descriptionPlain.slice(0, 497) + '...' : descriptionPlain;
+  $: descriptionTrimmed = descriptionPlain.length > 400 ? descriptionPlain.slice(0, 397) + '...' : descriptionPlain;
+  $: speaker = descriptionHtml ? extractSpeaker(descriptionHtml) : null;
+
+  const entryLabels: Record<string, string> = {
+    de: 'Eintritt frei · Spenden erbeten',
+    en: 'Free entry · Donations welcome',
+    ar: 'الدخول مجاني · التبرعات مرحب بها',
+  };
 
   async function renderToCanvas(el: HTMLElement, width: number, height: number) {
     const html2canvas = (await import('html2canvas')).default;
@@ -114,7 +133,7 @@
   <!-- PDF Render Target (A5 ratio: 560x794 at 2x = 1120x1588) -->
   <div class="render-offscreen">
     <div bind:this={pdfTarget} class="pdf-canvas">
-      <!-- Header band -->
+      <!-- Header with photo -->
       <div class="pdf-header">
         {#if event.image_url}
           <img src={event.image_url} alt="" class="pdf-hero-img" crossorigin="anonymous" />
@@ -125,7 +144,7 @@
           </div>
         {/if}
         <div class="pdf-hero-text">
-          <span class="pdf-category">{event.category_icon} {categoryName}</span>
+          <span class="pdf-category">{event.category_icon} {categoryName.toUpperCase()}</span>
         </div>
       </div>
 
@@ -133,28 +152,41 @@
       <div class="pdf-body">
         <h1 class="pdf-title">{title}</h1>
 
+        {#if speaker}
+          <p class="pdf-speaker">{speaker}</p>
+        {/if}
+
         <div class="pdf-meta">
           <div class="pdf-meta-row">
-            <span class="pdf-meta-icon">📅</span>
+            <span class="pdf-meta-label">Datum</span>
             <span class="pdf-meta-text">{formattedDate}</span>
           </div>
           <div class="pdf-meta-row">
-            <span class="pdf-meta-icon">🕐</span>
-            <span class="pdf-meta-text">{event.time} Uhr</span>
+            <span class="pdf-meta-label">Uhrzeit</span>
+            <span class="pdf-meta-text">{event.time}</span>
           </div>
           <div class="pdf-meta-row">
-            <span class="pdf-meta-icon">📍</span>
+            <span class="pdf-meta-label">Ort</span>
             <span class="pdf-meta-text">{event.location}, {event.address}</span>
           </div>
         </div>
 
         <p class="pdf-description">{descriptionTrimmed}</p>
+
+        <p class="pdf-entry">{entryLabels[lang]}</p>
+      </div>
+
+      <!-- Partner logos -->
+      <div class="pdf-partners">
+        <img src="/partners/koeln-bethlehem.png" alt="" class="pdf-partner-logo" crossorigin="anonymous" />
+        <img src="/partners/bildungswerk-koeln.png" alt="" class="pdf-partner-logo" crossorigin="anonymous" />
+        <img src="/partners/cafe-palestine-colonia.png" alt="" class="pdf-partner-logo" crossorigin="anonymous" />
+        <img src="/partners/pax-christi-koeln.png" alt="" class="pdf-partner-logo" crossorigin="anonymous" />
       </div>
 
       <!-- Footer -->
       <div class="pdf-footer">
-        <img src="/logo.jpg" alt="Café Palestine Colonia" class="pdf-logo" crossorigin="anonymous" />
-        <span class="pdf-url">www.cafepalestinecolonia.de</span>
+        <span class="pdf-url">Café Palestine Colonia · www.cafepalestinecolonia.de</span>
       </div>
     </div>
   </div>
@@ -167,26 +199,38 @@
       {/if}
       <div class="insta-overlay"></div>
 
-      <!-- Top badge -->
+      <!-- Top-right badge -->
       <div class="insta-top">
-        <span class="insta-badge">{event.category_icon} {categoryName}</span>
+        <span class="insta-badge">{event.category_icon} {categoryName.toUpperCase()}</span>
       </div>
 
       <!-- Center content -->
       <div class="insta-center">
         <h1 class="insta-title">{title}</h1>
+
+        {#if speaker}
+          <p class="insta-speaker">{speaker}</p>
+        {/if}
+
         <div class="insta-divider"></div>
+
         <div class="insta-details">
-          <span class="insta-detail">📅 {formattedDate}</span>
-          <span class="insta-detail">🕐 {event.time} Uhr</span>
-          <span class="insta-detail">📍 {event.location}</span>
+          <span class="insta-detail">{formattedDate}</span>
+          <span class="insta-detail-small">{event.time} Uhr</span>
+          <span class="insta-detail-small">{event.location}</span>
         </div>
+
+        <span class="insta-entry">{entryLabels[lang]}</span>
       </div>
 
-      <!-- Bottom branding -->
+      <!-- Bottom branding with partner logos -->
       <div class="insta-bottom">
-        <img src="/logo.jpg" alt="CPC" class="insta-logo" crossorigin="anonymous" />
-        <span class="insta-brand">Café Palestine Colonia</span>
+        <div class="insta-partners">
+          <img src="/partners/koeln-bethlehem.png" alt="" class="insta-partner" crossorigin="anonymous" />
+          <img src="/partners/bildungswerk-koeln.png" alt="" class="insta-partner" crossorigin="anonymous" />
+          <img src="/partners/cafe-palestine-colonia.png" alt="" class="insta-partner" crossorigin="anonymous" />
+          <img src="/partners/pax-christi-koeln.png" alt="" class="insta-partner" crossorigin="anonymous" />
+        </div>
       </div>
     </div>
   </div>
@@ -228,7 +272,7 @@
   .pdf-hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(26,61,46,0.1) 0%, rgba(26,61,46,0.5) 100%);
+    background: linear-gradient(to bottom, rgba(26,61,46,0.05) 0%, rgba(26,61,46,0.45) 100%);
   }
 
   .pdf-hero-gradient {
@@ -264,41 +308,53 @@
 
   .pdf-body {
     flex: 1;
-    padding: 28px 32px 16px;
+    padding: 24px 32px 12px;
     display: flex;
     flex-direction: column;
   }
 
   .pdf-title {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
     color: #1a3d2e;
-    line-height: 1.25;
-    margin: 0 0 20px;
+    line-height: 1.2;
+    margin: 0 0 6px;
+  }
+
+  .pdf-speaker {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b8c42;
+    margin: 0 0 16px;
+    font-style: italic;
   }
 
   .pdf-meta {
     background: #f0ece2;
-    border-radius: 12px;
-    padding: 14px 18px;
-    margin-bottom: 20px;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .pdf-meta-row {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 10px;
-    font-size: 13px;
+    font-size: 12.5px;
     color: #1c1c1c;
   }
 
-  .pdf-meta-icon {
-    font-size: 16px;
-    flex-shrink: 0;
+  .pdf-meta-label {
+    font-weight: 700;
+    color: #1a3d2e;
+    min-width: 52px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .pdf-meta-text {
@@ -306,36 +362,55 @@
   }
 
   .pdf-description {
-    font-size: 12.5px;
-    line-height: 1.65;
+    font-size: 11.5px;
+    line-height: 1.6;
     color: #4a4a4a;
     margin: 0;
     flex: 1;
     overflow: hidden;
   }
 
-  .pdf-footer {
+  .pdf-entry {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b8c42;
+    margin: 10px 0 0;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  .pdf-partners {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 32px;
-    border-top: 2px solid #e8dcc4;
-    background: #f5f0e6;
+    justify-content: center;
+    gap: 16px;
+    padding: 10px 32px;
+    border-top: 1px solid #e8dcc4;
     flex-shrink: 0;
   }
 
-  .pdf-logo {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+  .pdf-partner-logo {
+    height: 32px;
+    width: auto;
+    max-width: 90px;
     object-fit: contain;
+    opacity: 0.85;
+  }
+
+  .pdf-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 32px;
+    background: #1a3d2e;
+    flex-shrink: 0;
   }
 
   .pdf-url {
-    font-size: 12px;
-    color: #6b8c42;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    font-size: 11px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+    letter-spacing: 0.03em;
   }
 
   /* ===== INSTAGRAM LAYOUT (1080x1080) ===== */
@@ -361,16 +436,16 @@
     inset: 0;
     background: linear-gradient(
       180deg,
-      rgba(26,61,46,0.55) 0%,
-      rgba(26,61,46,0.75) 40%,
-      rgba(26,61,46,0.9) 100%
+      rgba(26,61,46,0.35) 0%,
+      rgba(26,61,46,0.55) 35%,
+      rgba(26,61,46,0.78) 100%
     );
   }
 
   .insta-top {
     position: absolute;
-    top: 48px;
-    right: 48px;
+    top: 44px;
+    right: 44px;
     z-index: 2;
   }
 
@@ -379,7 +454,7 @@
     backdrop-filter: blur(8px);
     padding: 10px 22px;
     border-radius: 30px;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 600;
     color: white;
     text-transform: uppercase;
@@ -395,18 +470,27 @@
     align-items: center;
     justify-content: center;
     z-index: 2;
-    padding: 80px 72px;
+    padding: 100px 80px 140px;
     text-align: center;
   }
 
   .insta-title {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 64px;
+    font-size: 58px;
     font-weight: 700;
     color: white;
     line-height: 1.15;
-    margin: 0 0 36px;
+    margin: 0 0 12px;
     text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+
+  .insta-speaker {
+    font-size: 26px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    margin: 0 0 28px;
+    font-style: italic;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.2);
   }
 
   .insta-divider {
@@ -414,47 +498,65 @@
     height: 3px;
     background: #d4a853;
     border-radius: 2px;
-    margin-bottom: 36px;
+    margin-bottom: 28px;
   }
 
   .insta-details {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 8px;
     align-items: center;
+    margin-bottom: 20px;
   }
 
   .insta-detail {
     font-size: 28px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.92);
+    font-weight: 600;
+    color: rgba(255,255,255,0.95);
     text-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  }
+
+  .insta-detail-small {
+    font-size: 24px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.85);
+    text-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  }
+
+  .insta-entry {
+    font-size: 20px;
+    font-weight: 500;
+    color: #d4a853;
+    letter-spacing: 0.04em;
   }
 
   .insta-bottom {
     position: absolute;
-    bottom: 48px;
+    bottom: 0;
     left: 0;
     right: 0;
+    z-index: 2;
+    padding: 20px 44px 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .insta-partners {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
-    z-index: 2;
+    gap: 24px;
   }
 
-  .insta-logo {
-    width: 52px;
-    height: 52px;
-    border-radius: 10px;
+  .insta-partner {
+    height: 36px;
+    width: auto;
+    max-width: 90px;
     object-fit: contain;
-    border: 2px solid rgba(255,255,255,0.3);
-  }
-
-  .insta-brand {
-    font-size: 24px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.85);
-    letter-spacing: 0.04em;
+    background: rgba(255,255,255,0.85);
+    border-radius: 6px;
+    padding: 4px 8px;
   }
 </style>
