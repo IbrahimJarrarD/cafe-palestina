@@ -44,10 +44,6 @@
   }
 
   function extractSpeaker(html: string): string | null {
-    const text = stripHtml(html);
-    const patterns = [
-      /(?:Dr\.\s*)?(?:Prof\.\s*)?[A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß-]+){1,3}/,
-    ];
     const strongMatch = html.match(/<strong>([^<]*(?:Dr\.|Prof\.)[^<]*)<\/strong>/);
     if (strongMatch) return strongMatch[1].trim();
     const h2Match = html.match(/<h2>([^<]*(?:Dr\.|Prof\.)[^<]*)<\/h2>/);
@@ -55,8 +51,27 @@
     return null;
   }
 
+  function extractPartnerLogos(html: string): string[] {
+    const urls: string[] = [];
+    const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g;
+    let match;
+    while ((match = imgRegex.exec(html)) !== null) {
+      urls.push(match[1]);
+    }
+    return urls;
+  }
+
+  function stripImagesAndPartnerSection(html: string): string {
+    let cleaned = html.replace(/<img[^>]*>/g, '');
+    cleaned = cleaned.replace(/<p>\s*<strong>\s*(?:In Kooperation mit|In cooperation with|بالتعاون مع)[^<]*<\/strong>\s*<\/p>/gi, '');
+    cleaned = cleaned.replace(/<div[^>]*class="[^"]*partner[^"]*"[^>]*>[\s\S]*?<\/div>/gi, '');
+    return cleaned;
+  }
+
   $: descriptionHtml = event ? (event[`description_${lang}` as keyof ExportEvent] as string) || event.description_en : '';
-  $: descriptionPlain = descriptionHtml ? stripHtml(descriptionHtml) : '';
+  $: partnerLogos = descriptionHtml ? extractPartnerLogos(descriptionHtml) : [];
+  $: cleanedHtml = descriptionHtml ? stripImagesAndPartnerSection(descriptionHtml) : '';
+  $: descriptionPlain = cleanedHtml ? stripHtml(cleanedHtml) : '';
   $: descriptionTrimmed = descriptionPlain.length > 800 ? descriptionPlain.slice(0, 797) + '...' : descriptionPlain;
   $: speaker = descriptionHtml ? extractSpeaker(descriptionHtml) : null;
 
@@ -173,6 +188,15 @@
         <p class="pdf-entry">{entryLabels[lang]}</p>
       </div>
 
+      <!-- Partner logos (dynamic from description) -->
+      {#if partnerLogos.length > 0}
+        <div class="pdf-partners">
+          {#each partnerLogos as logoUrl}
+            <img src={logoUrl} alt="" class="pdf-partner-logo" crossorigin="anonymous" />
+          {/each}
+        </div>
+      {/if}
+
       <!-- Footer -->
       <div class="pdf-footer">
         <span class="pdf-url">Café Palestine Colonia · www.cafepalestinecolonia.de</span>
@@ -209,7 +233,15 @@
 
       <!-- Bottom branding -->
       <div class="insta-bottom">
-        <span class="insta-brand">Café Palestine Colonia</span>
+        {#if partnerLogos.length > 0}
+          <div class="insta-partners">
+            {#each partnerLogos as logoUrl}
+              <img src={logoUrl} alt="" class="insta-partner" crossorigin="anonymous" />
+            {/each}
+          </div>
+        {:else}
+          <span class="insta-brand">Café Palestine Colonia</span>
+        {/if}
       </div>
     </div>
   </div>
@@ -341,6 +373,24 @@
     letter-spacing: 0.02em;
   }
 
+  .pdf-partners {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 8px 32px;
+    border-top: 1px solid #e8dcc4;
+    flex-shrink: 0;
+  }
+
+  .pdf-partner-logo {
+    height: 30px;
+    width: auto;
+    max-width: 85px;
+    object-fit: contain;
+    opacity: 0.85;
+  }
+
   .pdf-footer {
     display: flex;
     align-items: center;
@@ -465,6 +515,23 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
+  }
+
+  .insta-partners {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .insta-partner {
+    height: 36px;
+    width: auto;
+    max-width: 90px;
+    object-fit: contain;
+    background: rgba(255,255,255,0.85);
+    border-radius: 6px;
+    padding: 4px 8px;
   }
 
   .insta-brand {
