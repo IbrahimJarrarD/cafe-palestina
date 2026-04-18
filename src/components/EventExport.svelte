@@ -57,7 +57,7 @@
 
   $: descriptionHtml = event ? (event[`description_${lang}` as keyof ExportEvent] as string) || event.description_en : '';
   $: descriptionPlain = descriptionHtml ? stripHtml(descriptionHtml) : '';
-  $: descriptionTrimmed = descriptionPlain.length > 400 ? descriptionPlain.slice(0, 397) + '...' : descriptionPlain;
+  $: descriptionTrimmed = descriptionPlain.length > 800 ? descriptionPlain.slice(0, 797) + '...' : descriptionPlain;
   $: speaker = descriptionHtml ? extractSpeaker(descriptionHtml) : null;
 
   const entryLabels: Record<string, string> = {
@@ -143,9 +143,6 @@
             <span class="pdf-hero-icon">{event.category_icon}</span>
           </div>
         {/if}
-        <div class="pdf-hero-text">
-          <span class="pdf-category">{event.category_icon} {categoryName.toUpperCase()}</span>
-        </div>
       </div>
 
       <!-- Body -->
@@ -176,14 +173,6 @@
         <p class="pdf-entry">{entryLabels[lang]}</p>
       </div>
 
-      <!-- Partner logos -->
-      <div class="pdf-partners">
-        <img src="/partners/koeln-bethlehem.png" alt="" class="pdf-partner-logo" crossorigin="anonymous" />
-        <img src="/partners/bildungswerk-koeln.png" alt="" class="pdf-partner-logo" crossorigin="anonymous" />
-        <img src="/partners/cafe-palestine-colonia.png" alt="" class="pdf-partner-logo" crossorigin="anonymous" />
-        <img src="/partners/pax-christi-koeln.png" alt="" class="pdf-partner-logo" crossorigin="anonymous" />
-      </div>
-
       <!-- Footer -->
       <div class="pdf-footer">
         <span class="pdf-url">Café Palestine Colonia · www.cafepalestinecolonia.de</span>
@@ -198,11 +187,6 @@
         <img src={event.image_url} alt="" class="insta-bg" crossorigin="anonymous" />
       {/if}
       <div class="insta-overlay"></div>
-
-      <!-- Top-right badge -->
-      <div class="insta-top">
-        <span class="insta-badge">{event.category_icon} {categoryName.toUpperCase()}</span>
-      </div>
 
       <!-- Center content -->
       <div class="insta-center">
@@ -223,14 +207,9 @@
         <span class="insta-entry">{entryLabels[lang]}</span>
       </div>
 
-      <!-- Bottom branding with partner logos -->
+      <!-- Bottom branding -->
       <div class="insta-bottom">
-        <div class="insta-partners">
-          <img src="/partners/koeln-bethlehem.png" alt="" class="insta-partner" crossorigin="anonymous" />
-          <img src="/partners/bildungswerk-koeln.png" alt="" class="insta-partner" crossorigin="anonymous" />
-          <img src="/partners/cafe-palestine-colonia.png" alt="" class="insta-partner" crossorigin="anonymous" />
-          <img src="/partners/pax-christi-koeln.png" alt="" class="insta-partner" crossorigin="anonymous" />
-        </div>
+        <span class="insta-brand">Café Palestine Colonia</span>
       </div>
     </div>
   </div>
@@ -258,7 +237,7 @@
 
   .pdf-header {
     position: relative;
-    height: 200px;
+    height: 170px;
     overflow: hidden;
     flex-shrink: 0;
   }
@@ -287,23 +266,6 @@
   .pdf-hero-icon {
     font-size: 64px;
     filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
-  }
-
-  .pdf-hero-text {
-    position: absolute;
-    bottom: 12px;
-    left: 24px;
-  }
-
-  .pdf-category {
-    background: rgba(255,255,255,0.92);
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #1a3d2e;
   }
 
   .pdf-body {
@@ -362,8 +324,8 @@
   }
 
   .pdf-description {
-    font-size: 11.5px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.55;
     color: #4a4a4a;
     margin: 0;
     flex: 1;
@@ -377,24 +339,6 @@
     margin: 10px 0 0;
     text-align: center;
     letter-spacing: 0.02em;
-  }
-
-  .pdf-partners {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 10px 32px;
-    border-top: 1px solid #e8dcc4;
-    flex-shrink: 0;
-  }
-
-  .pdf-partner-logo {
-    height: 32px;
-    width: auto;
-    max-width: 90px;
-    object-fit: contain;
-    opacity: 0.85;
   }
 
   .pdf-footer {
@@ -440,26 +384,6 @@
       rgba(26,61,46,0.55) 35%,
       rgba(26,61,46,0.78) 100%
     );
-  }
-
-  .insta-top {
-    position: absolute;
-    top: 44px;
-    right: 44px;
-    z-index: 2;
-  }
-
-  .insta-badge {
-    background: rgba(255,255,255,0.18);
-    backdrop-filter: blur(8px);
-    padding: 10px 22px;
-    border-radius: 30px;
-    font-size: 20px;
-    font-weight: 600;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border: 1px solid rgba(255,255,255,0.25);
   }
 
   .insta-center {
@@ -543,20 +467,10 @@
     gap: 12px;
   }
 
-  .insta-partners {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-  }
-
-  .insta-partner {
-    height: 36px;
-    width: auto;
-    max-width: 90px;
-    object-fit: contain;
-    background: rgba(255,255,255,0.85);
-    border-radius: 6px;
-    padding: 4px 8px;
+  .insta-brand {
+    font-size: 24px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.04em;
   }
 </style>
