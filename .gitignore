@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # internal docs (contains credentials/architecture details)
 HANDOVER.md
+
+# local claude settings (personal permissions)
+.claude/settings.local.json
