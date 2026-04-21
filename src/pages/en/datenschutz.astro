@@ -1,0 +1,181 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+const lang = 'en';
+---
+
+<Layout title="Privacy Policy | Cafe Palestine Colonia" lang={lang}>
+  <Header lang={lang} />
+  <main class="legal-page">
+    <div class="container">
+      <h1>Privacy Policy</h1>
+
+      <section>
+        <h2>1. Responsible Party</h2>
+        <p>
+          Responsible for data processing on this website:<br>
+          <strong>Suraya Hoffmann</strong><br>
+          Cafe Palestine Colonia (Cultural Initiative)<br>
+          Email: <a href="mailto:hoffmann.suraya@gmail.com">hoffmann.suraya@gmail.com</a><br>
+          Phone: <a href="tel:+4917656572697">0176 5657 2697</a>
+        </p>
+      </section>
+
+      <section>
+        <h2>2. General Information on Data Processing</h2>
+        <p>
+          The protection of your personal data is important to us. This website collects as little personal data as possible. We do not use cookies, tracking, or analytics tools such as Google Analytics. No data is collected or shared for advertising purposes.
+        </p>
+      </section>
+
+      <section>
+        <h2>3. Hosting</h2>
+        <p>
+          This website is hosted by <strong>Vercel Inc.</strong> (440 N Baxter St, Los Angeles, CA 90012, USA). When you visit the website, technical data is automatically collected by the web server (so-called server log files). This includes:
+        </p>
+        <ul>
+          <li>IP address of the requesting device</li>
+          <li>Date and time of access</li>
+          <li>Requested page/URL</li>
+          <li>Browser and operating system used</li>
+        </ul>
+        <p>
+          This data is required for the technical operation of the website and is automatically deleted after a short period. The legal basis is Art. 6(1)(f) GDPR (legitimate interest in the secure operation of the website).
+        </p>
+        <p>
+          Vercel may process data in the USA. Vercel is certified under the EU-US Data Privacy Framework.
+        </p>
+      </section>
+
+      <section>
+        <h2>4. Database</h2>
+        <p>
+          For managing event content, we use <strong>Supabase Inc.</strong> (San Francisco, USA) as our database service provider. Supabase stores the website content (events, texts, settings). Personal data of visitors is not stored there.
+        </p>
+        <p>
+          Only administrator accounts (for website management) are stored with Supabase. This is based on Art. 6(1)(b) GDPR (performance of a contract).
+        </p>
+      </section>
+
+      <section>
+        <h2>5. Google Fonts</h2>
+        <p>
+          This website uses fonts from <strong>Google Fonts</strong> (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland). When you access the website, a connection to Google's servers is established to load the fonts. In this process, your IP address is transmitted to Google.
+        </p>
+        <p>
+          This usage is based on Art. 6(1)(f) GDPR (legitimate interest in a consistent presentation of the website). For more information, please refer to <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.
+        </p>
+      </section>
+
+      <section>
+        <h2>6. YouTube and Vimeo (Videos)</h2>
+        <p>
+          On individual event pages, videos from <strong>YouTube</strong> (Google Ireland Limited) or <strong>Vimeo</strong> (Vimeo Inc., 555 West 18th Street, New York, NY 10011, USA) may be embedded. When a video is played, a connection to the respective provider's servers is established. In this process, your IP address is transmitted.
+        </p>
+        <p>
+          Videos are only loaded when you open an event that contains a video. The embedding is based on Art. 6(1)(f) GDPR.
+        </p>
+      </section>
+
+      <section>
+        <h2>7. External Links</h2>
+        <p>
+          The website contains links to Google Maps (to display the event location) and Google Calendar (to add events to your calendar). These links open external websites in a new window. Data is only transmitted to Google when you click on these links.
+        </p>
+      </section>
+
+      <section>
+        <h2>8. Your Rights</h2>
+        <p>
+          You have the following rights regarding your personal data:
+        </p>
+        <ul>
+          <li>Right of access (Art. 15 GDPR)</li>
+          <li>Right to rectification (Art. 16 GDPR)</li>
+          <li>Right to erasure (Art. 17 GDPR)</li>
+          <li>Right to restriction of processing (Art. 18 GDPR)</li>
+          <li>Right to data portability (Art. 20 GDPR)</li>
+          <li>Right to object (Art. 21 GDPR)</li>
+        </ul>
+        <p>
+          You also have the right to lodge a complaint with a data protection supervisory authority regarding the processing of your personal data.
+        </p>
+      </section>
+
+      <section>
+        <h2>9. Changes</h2>
+        <p>
+          We reserve the right to update this privacy policy as needed to ensure it always meets current legal requirements.
+        </p>
+        <p><em>Last updated: April 2026</em></p>
+      </section>
+    </div>
+  </main>
+  <Footer lang={lang} />
+</Layout>
+
+<style>
+  .legal-page {
+    padding: calc(80px + var(--space-3xl)) 0 var(--space-4xl);
+    min-height: 60vh;
+  }
+
+  .legal-page .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 var(--space-xl);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--pine);
+    margin-bottom: var(--space-3xl);
+  }
+
+  section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--pine);
+    margin-bottom: var(--space-md);
+  }
+
+  p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--ink);
+    margin-bottom: var(--space-md);
+  }
+
+  ul {
+    margin: 0 0 var(--space-md) var(--space-xl);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--ink);
+  }
+
+  li {
+    margin-bottom: var(--space-xs);
+  }
+
+  a {
+    color: var(--olive);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  em {
+    color: var(--ink-light);
+  }
+</style>

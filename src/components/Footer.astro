@@ -29,6 +29,11 @@ const footerDesc = getContent(pageContent, 'footer_description', lang) || tr.foo
 
 // Current year for copyright
 const currentYear = new Date().getFullYear();
+
+// Language-aware legal page links
+const langPrefix = lang === 'de' ? '' : `/${lang}`;
+const impressumUrl = `${langPrefix}/impressum`;
+const datenschutzUrl = `${langPrefix}/datenschutz`;
 ---
 
 <footer class="footer" id="contact">
@@ -56,8 +61,8 @@ const currentYear = new Date().getFullYear();
           <a href="#events">{tr.nav.events}</a>
           <a href="#about">{tr.nav.about}</a>
           <a href="#contact">{tr.footer.contact}</a>
-          <a href="#">{tr.footer.impressum}</a>
-          <a href="#">{tr.footer.privacy}</a>
+          <a href={impressumUrl}>{tr.footer.impressum}</a>
+          <a href={datenschutzUrl}>{tr.footer.privacy}</a>
           <a href="/admin/login" class="admin-link">Admin</a>
         </nav>
       </div>

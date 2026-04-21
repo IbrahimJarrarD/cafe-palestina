@@ -1,0 +1,118 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+const lang = 'en';
+---
+
+<Layout title="Legal Notice | Cafe Palestine Colonia" lang={lang}>
+  <Header lang={lang} />
+  <main class="legal-page">
+    <div class="container">
+      <h1>Legal Notice</h1>
+
+      <section>
+        <h2>Information according to &sect; 5 TMG (German Telemedia Act)</h2>
+        <p>
+          Cafe Palestine Colonia<br>
+          (Cultural Initiative)
+        </p>
+        <p>
+          Responsible for content:<br>
+          <strong>Suraya Hoffmann</strong>
+        </p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>
+          Venue: Quaker Neighbourhood House<br>
+          Kreutzerstrasse 5&ndash;9<br>
+          Cologne-Ehrenfeld, Germany
+        </p>
+        <p>
+          Email: <a href="mailto:hoffmann.suraya@gmail.com">hoffmann.suraya@gmail.com</a><br>
+          Phone: <a href="tel:+4917656572697">+49 176 5657 2697</a>
+        </p>
+      </section>
+
+      <section>
+        <h2>Liability for Content</h2>
+        <p>
+          As a content provider according to &sect; 7 para. 1 TMG, we are responsible for our own content on these pages under general law. According to &sect;&sect; 8 to 10 TMG, however, we are not obligated to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity.
+        </p>
+        <p>
+          Obligations to remove or block the use of information under general law remain unaffected. However, liability in this regard is only possible from the time of knowledge of a specific infringement. Upon becoming aware of such violations, we will remove this content immediately.
+        </p>
+      </section>
+
+      <section>
+        <h2>Liability for Links</h2>
+        <p>
+          Our website contains links to external third-party websites over whose content we have no influence. Therefore, we cannot assume any liability for this external content. The respective provider or operator of the linked pages is always responsible for their content.
+        </p>
+      </section>
+
+      <section>
+        <h2>Copyright</h2>
+        <p>
+          Texts, names, images, audio files, and logos are subject to the rights of the respective authors. Reproduction, editing, distribution, and any kind of use beyond the limits of copyright law require the written consent of the respective authors.
+        </p>
+        <p>
+          Logo design: Sabine Yacoub, <a href="https://www.sabine-yacoub.de" target="_blank" rel="noopener">www.sabine-yacoub.de</a>
+        </p>
+      </section>
+    </div>
+  </main>
+  <Footer lang={lang} />
+</Layout>
+
+<style>
+  .legal-page {
+    padding: calc(80px + var(--space-3xl)) 0 var(--space-4xl);
+    min-height: 60vh;
+  }
+
+  .legal-page .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 var(--space-xl);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--pine);
+    margin-bottom: var(--space-3xl);
+  }
+
+  section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--pine);
+    margin-bottom: var(--space-md);
+  }
+
+  p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--ink);
+    margin-bottom: var(--space-md);
+  }
+
+  a {
+    color: var(--olive);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+</style>

@@ -1,0 +1,118 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const lang = 'de';
+---
+
+<Layout title="Impressum | Cafe Palestine Colonia" lang={lang}>
+  <Header lang={lang} />
+  <main class="legal-page">
+    <div class="container">
+      <h1>Impressum</h1>
+
+      <section>
+        <h2>Angaben gemass &sect; 5 TMG</h2>
+        <p>
+          Cafe Palestine Colonia<br>
+          (Kulturelle Initiative)
+        </p>
+        <p>
+          Verantwortlich fur den Inhalt:<br>
+          <strong>Suraya Hoffmann</strong>
+        </p>
+      </section>
+
+      <section>
+        <h2>Kontakt</h2>
+        <p>
+          Veranstaltungsort: Quaker Nachbarschaftshaus<br>
+          Kreutzerstrasse 5&ndash;9<br>
+          Koln-Ehrenfeld
+        </p>
+        <p>
+          E-Mail: <a href="mailto:hoffmann.suraya@gmail.com">hoffmann.suraya@gmail.com</a><br>
+          Telefon: <a href="tel:+4917656572697">0176 5657 2697</a>
+        </p>
+      </section>
+
+      <section>
+        <h2>Haftung fur Inhalte</h2>
+        <p>
+          Als Inhalteverantwortliche nach &sect; 7 Abs. 1 TMG sind wir fur eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach &sect;&sect; 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, ubermittelte oder gespeicherte fremde Informationen zu uberwachen oder nach Umstanden zu forschen, die auf eine rechtswidrige Tatigkeit hinweisen.
+        </p>
+        <p>
+          Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberuhrt. Eine diesbezugliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung moglich. Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.
+        </p>
+      </section>
+
+      <section>
+        <h2>Haftung fur Links</h2>
+        <p>
+          Unser Angebot enthalt Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb konnen wir fur diese fremden Inhalte auch keine Gewahr ubernehmen. Fur die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.
+        </p>
+      </section>
+
+      <section>
+        <h2>Urheberrecht</h2>
+        <p>
+          Texte, Namen, Bilder, Audios und Logos stehen unter dem Recht der betreffenden Urheber. Die Vervielfaltigung, Bearbeitung, Verbreitung und jede Art der Verwertung ausserhalb der Grenzen des Urheberrechtes bedurfen der schriftlichen Zustimmung der jeweiligen Urheber.
+        </p>
+        <p>
+          Logogestaltung: Sabine Yacoub, <a href="https://www.sabine-yacoub.de" target="_blank" rel="noopener">www.sabine-yacoub.de</a>
+        </p>
+      </section>
+    </div>
+  </main>
+  <Footer lang={lang} />
+</Layout>
+
+<style>
+  .legal-page {
+    padding: calc(80px + var(--space-3xl)) 0 var(--space-4xl);
+    min-height: 60vh;
+  }
+
+  .legal-page .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 var(--space-xl);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--pine);
+    margin-bottom: var(--space-3xl);
+  }
+
+  section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--pine);
+    margin-bottom: var(--space-md);
+  }
+
+  p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--ink);
+    margin-bottom: var(--space-md);
+  }
+
+  a {
+    color: var(--olive);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
