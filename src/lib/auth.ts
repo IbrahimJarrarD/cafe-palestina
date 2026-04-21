@@ -11,7 +11,6 @@ export async function signIn(email: string, password: string) {
   });
 
   if (error) {
-    console.error('Sign in error:', error);
     return { success: false, error: error.message };
   }
 
@@ -22,7 +21,6 @@ export async function signIn(email: string, password: string) {
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) {
-    console.error('Sign out error:', error);
     return { success: false, error: error.message };
   }
   return { success: true };
@@ -58,7 +56,6 @@ export async function getUserRole(userId?: string): Promise<UserRole | null> {
     .single();
   
   if (error) {
-    console.error('Error fetching user role:', error);
     return null;
   }
   
@@ -84,7 +81,6 @@ export async function getAllUsersWithRoles() {
     .order('created_at', { ascending: false });
   
   if (error) {
-    console.error('Error fetching users:', error);
     return [];
   }
   
@@ -99,7 +95,6 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
     .eq('user_id', userId);
   
   if (error) {
-    console.error('Error updating role:', error);
     return { success: false, error: error.message };
   }
   

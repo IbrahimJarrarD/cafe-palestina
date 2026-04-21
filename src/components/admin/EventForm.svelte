@@ -74,11 +74,25 @@
       .replace(/^-|-$/g, '');
   }
   
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
   // Handle image selection
   function handleImageSelect(e: Event) {
     const input = e.target as HTMLInputElement;
     if (input.files && input.files[0]) {
-      imageFile = input.files[0];
+      const file = input.files[0];
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        alert('Only JPEG, PNG, GIF, and WebP images are allowed.');
+        input.value = '';
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        alert('Image must be smaller than 5MB.');
+        input.value = '';
+        return;
+      }
+      imageFile = file;
       imagePreview = URL.createObjectURL(imageFile);
     }
   }
@@ -102,7 +116,6 @@
     uploadingImage = false;
     
     if (uploadError) {
-      console.error('Upload error:', uploadError);
       throw new Error('Failed to upload image: ' + uploadError.message);
     }
     
@@ -186,7 +199,6 @@
         setTimeout(() => { success = ''; }, 3000);
       }
     } catch (err: any) {
-      console.error('Save error:', err);
       error = err.message || 'Failed to save event';
     } finally {
       saving = false;

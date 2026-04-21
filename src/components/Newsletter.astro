@@ -202,9 +202,6 @@ const tr = t(lang);
     const formData = new FormData(form as HTMLFormElement);
     const email = formData.get('email');
     
-    // In a real app, this would send to a backend
-    console.log('Newsletter subscription:', email);
-    
     // Show success message
     const lang = document.documentElement.lang as 'de' | 'en' | 'ar';
     const messages = {

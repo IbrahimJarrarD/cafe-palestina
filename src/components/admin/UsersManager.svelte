@@ -16,6 +16,12 @@
   let updating: string | null = null;
   let error = '';
   let success = '';
+
+  // Invite form state
+  let showInviteForm = false;
+  let inviteEmail = '';
+  let inviteRole: UserRole = 'admin';
+  let inviting = false;
   
   onMount(async () => {
     await loadUsers();
@@ -67,6 +73,47 @@
     updating = null;
   }
   
+  async function inviteUser() {
+    if (!inviteEmail || inviting) return;
+    inviting = true;
+    error = '';
+    success = '';
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      error = 'You must be logged in';
+      inviting = false;
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        error = data.error || 'Failed to invite user';
+      } else {
+        success = `Invitation sent to ${inviteEmail}!`;
+        inviteEmail = '';
+        showInviteForm = false;
+        setTimeout(() => success = '', 5000);
+        await loadUsers();
+      }
+    } catch (err: any) {
+      error = err.message || 'Failed to invite user';
+    }
+
+    inviting = false;
+  }
+
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -85,6 +132,38 @@
     <div class="alert alert-success">{success}</div>
   {/if}
   
+  <!-- Invite Button & Form -->
+  <div class="invite-section">
+    {#if showInviteForm}
+      <form class="invite-form" on:submit|preventDefault={inviteUser}>
+        <div class="invite-fields">
+          <input
+            type="email"
+            bind:value={inviteEmail}
+            placeholder="email@example.com"
+            required
+            class="invite-input"
+          />
+          <select bind:value={inviteRole} class="invite-role-select">
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+          <button type="submit" class="btn btn-invite" disabled={inviting || !inviteEmail}>
+            {inviting ? 'Sending...' : 'Send Invite'}
+          </button>
+          <button type="button" class="btn btn-cancel" on:click={() => { showInviteForm = false; inviteEmail = ''; }}>
+            Cancel
+          </button>
+        </div>
+        <p class="invite-hint">An invitation email will be sent. The user must click the link to set their password.</p>
+      </form>
+    {:else}
+      <button class="btn btn-add" on:click={() => showInviteForm = true}>
+        + Invite User
+      </button>
+    {/if}
+  </div>
+
   {#if loading}
     <div class="loading">
       <div class="spinner"></div>
@@ -306,6 +385,104 @@
     background: white;
     border-radius: 12px;
     color: #6b7280;
+  }
+
+  /* Invite Section */
+  .invite-section {
+    margin-bottom: 0.5rem;
+  }
+
+  .invite-form {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border-left: 4px solid #6b8c42;
+  }
+
+  .invite-fields {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .invite-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.625rem 1rem;
+    font-size: 0.9rem;
+    border: 2px solid #e8dcc4;
+    border-radius: 8px;
+    background: #faf8f4;
+  }
+
+  .invite-input:focus {
+    outline: none;
+    border-color: #6b8c42;
+    background: white;
+  }
+
+  .invite-role-select {
+    padding: 0.625rem 1rem;
+    font-size: 0.9rem;
+    border: 2px solid #e8dcc4;
+    border-radius: 8px;
+    background: white;
+  }
+
+  .invite-hint {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: #9ca3af;
+  }
+
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-add {
+    background: #1a3d2e;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  .btn-add:hover {
+    background: #2d5a47;
+  }
+
+  .btn-invite {
+    background: #6b8c42;
+    color: white;
+  }
+
+  .btn-invite:hover:not(:disabled) {
+    background: #5a7a35;
+  }
+
+  .btn-invite:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-cancel {
+    background: transparent;
+    color: #6b7280;
+    border: 2px solid #e8dcc4;
+  }
+
+  .btn-cancel:hover {
+    border-color: #dc2626;
+    color: #dc2626;
   }
 </style>
 

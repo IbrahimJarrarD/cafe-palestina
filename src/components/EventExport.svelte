@@ -118,7 +118,6 @@
       pdf.addImage(imgData, 'JPEG', 0, 0, 148, 210);
       pdf.save(`${event.slug}-einladung.pdf`);
     } catch (err) {
-      console.error('PDF export failed:', err);
       alert('PDF export failed. Please try again.');
     } finally {
       generating = '';
@@ -136,7 +135,6 @@
         if (blob) download(blob, `${event!.slug}-instagram.png`);
       }, 'image/png');
     } catch (err) {
-      console.error('Instagram export failed:', err);
       alert('Instagram export failed. Please try again.');
     } finally {
       generating = '';

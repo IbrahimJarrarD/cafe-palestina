@@ -84,7 +84,6 @@
       .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
       return null;
     }
 
@@ -102,8 +101,18 @@
     handleInput();
   }
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+
   async function handleImageUpload(file: File) {
-    if (!file.type.startsWith('image/')) return;
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      alert('Only JPEG, PNG, GIF, WebP, and SVG images are allowed.');
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      alert('Image must be smaller than 5MB.');
+      return;
+    }
     uploading = true;
     try {
       const url = await uploadToStorage(file);

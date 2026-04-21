@@ -10,7 +10,6 @@ export async function getCategories() {
     .order('sort_order', { ascending: true });
 
   if (error) {
-    console.error('Error fetching categories:', error);
     return [];
   }
 
@@ -24,7 +23,6 @@ export async function getImageTypes() {
     .select('*');
 
   if (error) {
-    console.error('Error fetching image types:', error);
     return [];
   }
 
@@ -45,7 +43,6 @@ export async function getEvents(): Promise<EventWithRelations[]> {
     .order('date', { ascending: true });
 
   if (error) {
-    console.error('Error fetching events:', error);
     return [];
   }
 
@@ -65,7 +62,6 @@ export async function getEventBySlug(slug: string): Promise<EventWithRelations |
     .single();
 
   if (error) {
-    console.error('Error fetching event:', error);
     return null;
   }
 
@@ -81,7 +77,6 @@ export async function getRSVPCount(eventId: string): Promise<number> {
     .is('cancelled_at', null);
 
   if (error) {
-    console.error('Error fetching RSVP count:', error);
     return 0;
   }
 
@@ -113,7 +108,6 @@ export async function submitRSVP(data: {
     if (error.code === '23505') {
       return { success: false, error: 'already_registered' as const };
     }
-    console.error('Error submitting RSVP:', error);
     return { success: false, error: 'unknown' as const };
   }
 

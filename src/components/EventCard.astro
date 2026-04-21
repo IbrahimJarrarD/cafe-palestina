@@ -3,6 +3,7 @@ import type { Language } from '../i18n/translations';
 import type { EventWithRelations } from '../lib/database.types';
 import { t } from '../i18n/translations';
 import { getEventTitle, getEventDescription, getCategoryName } from '../lib/events';
+import { sanitizeHtml } from '../lib/sanitize';
 import EventImage from './EventImage.astro';
 
 interface Props {
@@ -103,7 +104,7 @@ const eventForModal = {
       </div>
     </div>
     
-    <div class="card-description" set:html={description} />
+    <div class="card-description" set:html={sanitizeHtml(description)} />
     
     <button class="card-btn" data-open-modal>
       {tr.events.learnMore}

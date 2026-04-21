@@ -22,7 +22,6 @@ export async function getActiveAnnouncement(): Promise<Announcement | null> {
   if (error) {
     // No active announcement is fine
     if (error.code === 'PGRST116') return null;
-    console.error('Error fetching announcement:', error);
     return null;
   }
 
@@ -52,7 +51,6 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     .select('*');
 
   if (error) {
-    console.error('Error fetching site settings:', error);
     return {};
   }
 
@@ -100,7 +98,6 @@ export async function getPageContent(): Promise<PageContentMap> {
     .select('*');
 
   if (error) {
-    console.error('Error fetching page content:', error);
     return {};
   }
 

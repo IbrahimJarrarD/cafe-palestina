@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import type { Language } from '../i18n/translations';
   import { t } from '../i18n/translations';
+  import { sanitizeHtml } from '../lib/sanitize';
   import EventExport from './EventExport.svelte';
   
   export let lang: Language;
@@ -214,7 +215,7 @@
         </div>
       {/if}
       
-      <div class="modal-description">{@html description}</div>
+      <div class="modal-description">{@html sanitizeHtml(description)}</div>
       
       <div class="modal-actions">
         <button class="action-btn action-primary" on:click={addToCalendar}>

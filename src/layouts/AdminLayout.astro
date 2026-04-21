@@ -1,5 +1,6 @@
 ---
 import AuthGuard from '../components/admin/AuthGuard.svelte';
+import MfaGuard from '../components/admin/MfaGuard.svelte';
 
 interface Props {
   title: string;
@@ -32,6 +33,7 @@ const navItems = [
 </head>
 <body>
   <AuthGuard client:load>
+  <MfaGuard client:load>
     <div class="admin-layout">
       <aside class="sidebar">
         <div class="sidebar-header">
@@ -78,6 +80,7 @@ const navItems = [
         </div>
       </main>
     </div>
+  </MfaGuard>
   </AuthGuard>
   
   <script>
