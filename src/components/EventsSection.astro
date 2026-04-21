@@ -15,7 +15,33 @@ const tr = t(lang);
 
 // Fetch events from Supabase
 const events = await getEvents();
+
+// Build JSON-LD structured data for events
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+const eventJsonLd = events.map((event) => ({
+  '@type': 'Event',
+  name: getEventTitle(event, lang),
+  startDate: `${event.date}T${event.time}`,
+  location: {
+    '@type': 'Place',
+    name: event.location,
+    address: event.address,
+  },
+  description: stripHtml(getEventDescription(event, lang)),
+}));
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': eventJsonLd,
+};
 ---
+
+{events.length > 0 && (
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+)}
 
 <section class="events-section" id="events">
   <div class="container">

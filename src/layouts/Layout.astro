@@ -7,13 +7,22 @@ interface Props {
   lang?: Language;
 }
 
-const { 
-  title, 
+const {
+  title,
   description = 'Kulturelle Veranstaltungen & Gemeinschaft in Köln',
-  lang = 'de' 
+  lang = 'de'
 } = Astro.props;
 
 const isRTL = lang === 'ar';
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.url.origin);
+
+const ogLocaleMap: Record<string, string> = {
+  de: 'de_DE',
+  en: 'en_US',
+  ar: 'ar_SA',
+};
+const ogLocale = ogLocaleMap[lang] || 'de_DE';
 ---
 
 <!doctype html>
@@ -23,13 +32,26 @@ const isRTL = lang === 'ar';
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalURL.href} />
     <meta name="generator" content={Astro.generator} />
-    
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:site_name" content="Cafe Palestine Colonia" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    
+
     <title>{title}</title>
   </head>
   <body class:list={[{ rtl: isRTL }]}>
