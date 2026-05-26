@@ -104,7 +104,13 @@
     uploadingImage = true;
     
     const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${slug}-${Date.now()}.${fileExt}`;
+    const safeSlug = slug
+      .toLowerCase()
+      .replace(/[äöüß]/g, c => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' })[c] || c)
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    const fileName = `${safeSlug}-${Date.now()}.${fileExt}`;
     
     const { data, error: uploadError } = await supabase.storage
       .from('event-images')
