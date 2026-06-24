@@ -17,6 +17,17 @@ export async function signIn(email: string, password: string) {
   return { success: true, user: data.user, session: data.session };
 }
 
+// Set/update the current user's password.
+// Used by the invite + password-recovery flow, where Supabase has already
+// established a temporary session from the email link.
+export async function setPassword(password: string) {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  return { success: true };
+}
+
 // Sign out
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
