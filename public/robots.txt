@@ -2,5 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-# Sitemap
-# Sitemap: https://cafepalestinecolonia.de/sitemap.xml
+Sitemap: https://www.cafepalestinecolonia.de/sitemap.xml

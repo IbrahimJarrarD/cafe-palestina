@@ -17,6 +17,17 @@ const isRTL = lang === 'ar';
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
 
+// Per-language alternates (de at /, en at /en, ar at /ar) for hreflang.
+const siteBase = Astro.site ?? new URL(Astro.url.origin);
+const basePath = Astro.url.pathname.replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
+const langSuffix = basePath === '/' ? '' : basePath;
+const hreflangAlternates = [
+  { hreflang: 'de', href: new URL(basePath, siteBase).href },
+  { hreflang: 'en', href: new URL(`/en${langSuffix}`, siteBase).href },
+  { hreflang: 'ar', href: new URL(`/ar${langSuffix}`, siteBase).href },
+  { hreflang: 'x-default', href: new URL(basePath, siteBase).href },
+];
+
 const ogLocaleMap: Record<string, string> = {
   de: 'de_DE',
   en: 'en_US',
@@ -33,9 +44,13 @@ const ogLocale = ogLocaleMap[lang] || 'de_DE';
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonicalURL.href} />
+    {hreflangAlternates.map((alt) => (
+      <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+    ))}
     <meta name="generator" content={Astro.generator} />
 
     <!-- Open Graph -->
+    <meta property="og:url" content={canonicalURL.href} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
