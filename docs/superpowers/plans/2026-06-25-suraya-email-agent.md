@@ -11,8 +11,8 @@
 ## Global Constraints
 
 - Scope is exactly two verbs: `create_event`, `create_blog_post`. Everything else is forwarded to Ibrahim and Alaa, never acted on. No edit/delete, ever.
-- Allowlist senders only: Suraya (hoffmann.suraya@gmail.com), Alaa, Ibrahim (tech@ibrahimjarrar.com). Confirm Alaa's address before build.
-- Reply language by sender: Ibrahim = English; Suraya and Alaa = German.
+- Allowlist senders only: Suraya (hoffmann.suraya@gmail.com), Alaa (alaayusuf100@gmail.com), Ibrahim (info@ibrahimjarrar.com and tech@ibrahimjarrar.com).
+- Reply language by sender: Ibrahim (info@/tech@) = English; Suraya and Alaa = German.
 - Confirm-before-write: nothing is written to `events`/`posts` without an explicit OK reply.
 - Supabase project ref `scctrpnoisvehdnspoej`. Service-role key only ever touches `events`, `posts`, `agent_pending_actions`. Never hardcoded; stored as encrypted n8n credential.
 - Model: not Opus, via OpenRouter, zero-data-retention routing, BDS-conscious (avoid Google/Gemini, Amazon-origin, caution on Azure/OpenAI). Lean: Mistral.
@@ -244,8 +244,9 @@ compatibility_flags = ["nodejs_compat"]
 ```js
 export const ALLOWLIST = [
   "hoffmann.suraya@gmail.com",
+  "alaayusuf100@gmail.com",
+  "info@ibrahimjarrar.com",
   "tech@ibrahimjarrar.com",
-  // TODO before deploy: add Alaa's address
 ];
 export function isAllowed(from) {
   return ALLOWLIST.includes(String(from || "").trim().toLowerCase());
@@ -389,7 +390,8 @@ Webhook node (POST, path e.g. `cafe-mail-agent`). First node after: an IF/Code n
 Code node:
 ```js
 const from = $json.from.toLowerCase();
-const replyLang = from === "tech@ibrahimjarrar.com" ? "en" : "de";
+const ibrahim = ["info@ibrahimjarrar.com", "tech@ibrahimjarrar.com"];
+const replyLang = ibrahim.includes(from) ? "en" : "de";
 const m = ($json.subject || "").match(/\[#([a-z0-9]{6})\]/i);
 return [{ json: { ...$json, replyLang, refCode: m ? m[1].toLowerCase() : null } }];
 ```
