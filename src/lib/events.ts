@@ -133,3 +133,18 @@ export function getEventDescription(event: Event | EventWithRelations, lang: Lan
   const key = `description_${lang}` as keyof Event;
   return (event[key] as string) || event.description_en;
 }
+
+// Parse a free-form event time ("18:00 - 20:00", "19:30 Uhr", "") with a date
+// (YYYY-MM-DD) into ISO 8601 datetimes. Falls back to a date-only (all-day)
+// value when no HH:MM can be found, so structured data / calendar links never
+// emit an invalid datetime.
+export function eventDateTimes(date: string, time: string | null): { start: string; end?: string } {
+  const matches = (time || '').match(/\d{1,2}:\d{2}/g) || [];
+  if (matches.length === 0) {
+    return { start: date };
+  }
+  const pad = (t: string) => (t.length === 4 ? `0${t}` : t); // "6:00" -> "06:00"
+  const start = `${date}T${pad(matches[0])}:00`;
+  const end = matches[1] ? `${date}T${pad(matches[1])}:00` : undefined;
+  return { start, end };
+}

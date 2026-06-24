@@ -74,6 +74,10 @@ export const translations = {
       placeholder: 'deine@email.com',
       button: 'Abonnieren',
       success: 'Danke! Willkommen in unserer Community.',
+      consent: 'Ich möchte den Newsletter erhalten und akzeptiere die ',
+      privacyLink: 'Datenschutzerklärung',
+      error: 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.',
+      already: 'Diese E-Mail-Adresse ist bereits angemeldet.',
     },
   },
   
@@ -141,6 +145,10 @@ export const translations = {
       placeholder: 'your@email.com',
       button: 'Subscribe',
       success: 'Thank you! Welcome to our community.',
+      consent: 'I want to receive the newsletter and accept the ',
+      privacyLink: 'privacy policy',
+      error: 'Something went wrong. Please try again later.',
+      already: 'This email is already subscribed.',
     },
   },
   
@@ -208,6 +216,10 @@ export const translations = {
       placeholder: 'بريدك@البريد.com',
       button: 'اشترك',
       success: 'شكراً! أهلاً بك في مجتمعنا.',
+      consent: 'أرغب في تلقي النشرة الإخبارية وأوافق على ',
+      privacyLink: 'سياسة الخصوصية',
+      error: 'حدث خطأ ما. يرجى المحاولة مرة أخرى لاحقاً.',
+      already: 'هذا البريد الإلكتروني مشترك بالفعل.',
     },
   },
 } as const;

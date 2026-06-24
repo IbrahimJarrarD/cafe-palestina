@@ -59,9 +59,12 @@ export const POST: APIRoute = async ({ request }) => {
     // Set the role for the invited user (the trigger creates 'user' by default,
     // but if we want admin, we need to update it)
     if (inviteRole === 'admin' && inviteData.user) {
-      await serverClient
+      const { error: roleError } = await serverClient
         .from('user_roles')
         .upsert({ user_id: inviteData.user.id, role: 'admin' }, { onConflict: 'user_id' });
+      if (roleError) {
+        console.error('[api/invite] invite sent but failed to set admin role:', roleError.message);
+      }
     }
 
     return new Response(JSON.stringify({

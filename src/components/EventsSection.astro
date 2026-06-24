@@ -1,7 +1,7 @@
 ---
 import type { Language } from '../i18n/translations';
 import { t } from '../i18n/translations';
-import { getEvents, getEventTitle, getEventDescription, getCategoryName } from '../lib/events';
+import { getEvents, getEventTitle, getEventDescription, getCategoryName, eventDateTimes } from '../lib/events';
 import type { EventWithRelations } from '../lib/database.types';
 import EventCard from './EventCard.astro';
 import EventModal from './EventModal.svelte';
@@ -21,17 +21,27 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
-const eventJsonLd = events.map((event) => ({
-  '@type': 'Event',
-  name: getEventTitle(event, lang),
-  startDate: `${event.date}T${event.time}`,
-  location: {
-    '@type': 'Place',
-    name: event.location,
-    address: event.address,
-  },
-  description: stripHtml(getEventDescription(event, lang)),
-}));
+const eventJsonLd = events.map((event) => {
+  const dt = eventDateTimes(event.date, event.time);
+  const node: Record<string, unknown> = {
+    '@type': 'Event',
+    name: getEventTitle(event, lang),
+    startDate: dt.start,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    location: {
+      '@type': 'Place',
+      name: event.location,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: event.address,
+      },
+    },
+    description: stripHtml(getEventDescription(event, lang)),
+  };
+  if (dt.end) node.endDate = dt.end;
+  return node;
+});
 
 const jsonLd = {
   '@context': 'https://schema.org',
