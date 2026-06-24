@@ -1,0 +1,20 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import BlogList from '../../../components/BlogList.astro';
+
+const lang = 'ar';
+---
+
+<Layout
+  title="المدونة | Cafe Palestine Colonia"
+  description="قصص وأخبار وأصوات من مجتمع مقهى فلسطين كولونيا في كولونيا."
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <BlogList lang={lang} />
+  </main>
+  <Footer lang={lang} />
+</Layout>

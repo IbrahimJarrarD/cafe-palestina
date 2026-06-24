@@ -1,0 +1,42 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import BlogForm from '../../../components/admin/BlogForm.svelte';
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/admin/blog');
+}
+// The post (incl. drafts) is fetched client-side inside BlogForm with the admin
+// session, since anon SSR cannot read draft rows via RLS.
+---
+
+<AdminLayout title="Edit Post" activeSection="blog">
+  <div class="blog-editor">
+    <div class="editor-header">
+      <a href="/admin/blog" class="back-link">← Back to Blog</a>
+    </div>
+
+    <BlogForm client:load mode="edit" postId={id} />
+  </div>
+</AdminLayout>
+
+<style>
+  .blog-editor {
+    max-width: 900px;
+  }
+
+  .editor-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .back-link {
+    color: var(--ink-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .back-link:hover {
+    color: var(--pine);
+  }
+</style>

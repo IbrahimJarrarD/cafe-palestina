@@ -1,0 +1,20 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import BlogList from '../../components/BlogList.astro';
+
+const lang = 'de';
+---
+
+<Layout
+  title="Blog | Cafe Palestine Colonia"
+  description="Geschichten, Neuigkeiten und Stimmen aus der Gemeinschaft von Cafe Palestine Colonia in Köln."
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <BlogList lang={lang} />
+  </main>
+  <Footer lang={lang} />
+</Layout>

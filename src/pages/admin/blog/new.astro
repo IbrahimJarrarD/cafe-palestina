@@ -1,0 +1,34 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import BlogForm from '../../../components/admin/BlogForm.svelte';
+---
+
+<AdminLayout title="New Post" activeSection="blog">
+  <div class="blog-editor">
+    <div class="editor-header">
+      <a href="/admin/blog" class="back-link">← Back to Blog</a>
+    </div>
+
+    <BlogForm client:load mode="create" />
+  </div>
+</AdminLayout>
+
+<style>
+  .blog-editor {
+    max-width: 900px;
+  }
+
+  .editor-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .back-link {
+    color: var(--ink-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .back-link:hover {
+    color: var(--pine);
+  }
+</style>

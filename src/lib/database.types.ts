@@ -126,6 +126,28 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['site_settings']['Row'], 'id' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['site_settings']['Insert']>;
       };
+      posts: {
+        Row: {
+          id: string;
+          slug: string;
+          title_de: string;
+          title_en: string;
+          title_ar: string;
+          excerpt_de: string | null;
+          excerpt_en: string | null;
+          excerpt_ar: string | null;
+          body_de: string;
+          body_en: string;
+          body_ar: string;
+          cover_image_url: string | null;
+          status: 'draft' | 'published';
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['posts']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Database['public']['Tables']['posts']['Insert']>;
+      };
     };
   };
 }
@@ -140,6 +162,8 @@ export type NewRSVP = Database['public']['Tables']['rsvps']['Insert'];
 export type PageContent = Database['public']['Tables']['page_content']['Row'];
 export type Announcement = Database['public']['Tables']['announcements']['Row'];
 export type SiteSetting = Database['public']['Tables']['site_settings']['Row'];
+export type Post = Database['public']['Tables']['posts']['Row'];
+export type NewPost = Database['public']['Tables']['posts']['Insert'];
 
 // Event with joined category and image type
 export interface EventWithRelations extends Event {

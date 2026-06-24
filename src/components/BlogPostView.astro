@@ -1,0 +1,231 @@
+---
+import type { Language } from '../i18n/translations';
+import { t } from '../i18n/translations';
+import type { Post } from '../lib/database.types';
+import { getPostTitle, getPostExcerpt, getPostBody } from '../lib/blog';
+import { sanitizeHtml } from '../lib/sanitize';
+
+interface Props {
+  post: Post;
+  lang: Language;
+}
+
+const { post, lang } = Astro.props;
+const tr = t(lang);
+
+const title = getPostTitle(post, lang);
+const excerpt = getPostExcerpt(post, lang);
+const body = sanitizeHtml(getPostBody(post, lang));
+
+const localeMap: Record<Language, string> = { de: 'de-DE', en: 'en-GB', ar: 'ar' };
+const formattedDate = post.published_at
+  ? new Date(post.published_at).toLocaleDateString(localeMap[lang], {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  : '';
+
+const langPrefix = lang === 'de' ? '' : `/${lang}`;
+const blogHref = `${langPrefix}/blog`;
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
+const description = excerpt || stripHtml(body).slice(0, 200);
+
+const jsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  inLanguage: lang,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalURL.href },
+  author: { '@type': 'Organization', name: 'Cafe Palestine Colonia' },
+  publisher: { '@type': 'Organization', name: 'Cafe Palestine Colonia' },
+};
+if (description) jsonLd.description = description;
+if (post.cover_image_url) jsonLd.image = post.cover_image_url;
+if (post.published_at) jsonLd.datePublished = post.published_at;
+if (post.updated_at) jsonLd.dateModified = post.updated_at;
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+<article class="post">
+  <div class="container">
+    <a href={blogHref} class="back-link">← {tr.blog.backToBlog}</a>
+
+    <header class="post-header">
+      {formattedDate && (
+        <time class="post-date" datetime={post.published_at}>{formattedDate}</time>
+      )}
+      <h1 class="post-title">{title}</h1>
+    </header>
+
+    {post.cover_image_url && (
+      <div class="post-cover">
+        <img src={post.cover_image_url} alt="" />
+      </div>
+    )}
+
+    <div class="post-body" set:html={body} />
+  </div>
+</article>
+
+<style>
+  .post {
+    padding: calc(72px + var(--space-2xl)) 0 var(--space-4xl);
+    position: relative;
+  }
+
+  .post .container {
+    max-width: 760px;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: var(--space-xl);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--olive);
+  }
+
+  .back-link:hover {
+    color: var(--pine);
+    text-decoration: underline;
+  }
+
+  .post-header {
+    margin-bottom: var(--space-xl);
+  }
+
+  .post-date {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--olive);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-sm);
+  }
+
+  .post-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    color: var(--pine);
+    line-height: 1.15;
+  }
+
+  :global([dir='rtl']) .post-title {
+    font-family: var(--font-arabic);
+  }
+
+  .post-cover {
+    margin-bottom: var(--space-2xl);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(26, 61, 46, 0.12);
+  }
+
+  .post-cover img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Rendered (sanitized) HTML body */
+  .post-body {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--ink);
+  }
+
+  .post-body :global(p) {
+    margin-bottom: var(--space-lg);
+  }
+
+  .post-body :global(h2) {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--pine);
+    margin: var(--space-2xl) 0 var(--space-md);
+  }
+
+  .post-body :global(h3) {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--pine);
+    margin: var(--space-xl) 0 var(--space-sm);
+  }
+
+  :global([dir='rtl']) .post-body :global(h2),
+  :global([dir='rtl']) .post-body :global(h3) {
+    font-family: var(--font-arabic);
+  }
+
+  .post-body :global(ul),
+  .post-body :global(ol) {
+    margin: 0 0 var(--space-lg) var(--space-xl);
+    line-height: 1.8;
+  }
+
+  :global([dir='rtl']) .post-body :global(ul),
+  :global([dir='rtl']) .post-body :global(ol) {
+    margin: 0 var(--space-xl) var(--space-lg) 0;
+  }
+
+  .post-body :global(li) {
+    margin-bottom: var(--space-xs);
+  }
+
+  .post-body :global(a) {
+    color: var(--terracotta);
+    text-decoration: underline;
+  }
+
+  .post-body :global(a:hover) {
+    color: var(--terracotta-dark);
+  }
+
+  .post-body :global(blockquote) {
+    margin: var(--space-xl) 0;
+    padding: var(--space-md) var(--space-lg);
+    border-left: 4px solid var(--olive);
+    background: var(--sand-light);
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: var(--ink-light);
+  }
+
+  :global([dir='rtl']) .post-body :global(blockquote) {
+    border-left: none;
+    border-right: 4px solid var(--olive);
+    border-radius: 8px 0 0 8px;
+  }
+
+  .post-body :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: var(--space-lg) 0;
+  }
+
+  .post-body :global(pre) {
+    background: var(--pine);
+    color: var(--sand-light);
+    padding: var(--space-lg);
+    border-radius: 12px;
+    overflow-x: auto;
+    margin-bottom: var(--space-lg);
+  }
+
+  .post-body :global(code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+  }
+</style>
