@@ -29,3 +29,6 @@ HANDOVER.md
 
 # local claude settings (personal permissions)
 .claude/settings.local.json
+
+# subagent-driven-development scratch (ledger, review packages, reports)
+.superpowers/
