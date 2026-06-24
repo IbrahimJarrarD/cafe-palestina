@@ -27,12 +27,13 @@ automatically. No secrets are stored here.
 - Newsletter signup saves emails: `newsletter_subscribers` table (anon insert, valid email + consent via RLS, admin-only read), consent checkbox + privacy link, rendered on all 3 home pages. Single opt-in (no confirmation email yet). View via Supabase table editor.
 - SEO: valid Event JSON-LD, hreflang (de/en/ar + x-default), `public/sitemap.xml` (static, hand-maintained 9 URLs), robots.txt -> www.
 - RSVP (in-house, complete): public form in the event modal (name/email/guests/message, trilingual, honeypot anti-spam, dedup). Admin `/admin/rsvps` is interactive (`RsvpManager.svelte`): per-event grouping + totals, manual add (email optional), paste-a-list import (one per line, email auto-detected), cancel/restore/delete. Event modal has a universal `.ics` download + the Google Calendar link. Admin dashboard RSVP count/recent fetched client-side.
+- Blog (in-house, complete): `posts` table (migration 009) mirroring the events CMS, multilingual title/excerpt/body (de/en/ar), cover image, draft/publish. Public `/blog` listing + `/blog/[slug]` pages in de/en/ar (`BlogList.astro` + `BlogPostView.astro`) with sanitized HTML bodies, SEO meta + BlogPosting JSON-LD. Admin `/admin/blog` CRUD (`BlogForm.svelte` + `BlogManager.svelte`) reuses `RichTextEditor` and the `event-images` bucket for covers. "Blog" added to Header nav + admin sidebar + sitemap. No comments/tags/RSS (RSS cheap to add later).
 - Stability fixes: EventModal focus trap, Footer language-aware link, lib error logging, branded 404, settings save-on-blur, impressum address = Geisselstraße 3-5 50823 Köln, DB function search_path hardened.
 - Suraya (hoffmann.suraya@gmail.com, admin) has a temp password set via the admin API and shared with Ibrahim directly (not stored here). She can log in (2FA optional). No in-app change-password screen yet.
 
 ## DB / migrations
 
-- Migrations 001-008 in `supabase/migrations/`. 006 (newsletter), 007 (function search_path), 008 (rsvp source/nullable-email/dedup) were applied to prod via the MCP and recorded as files.
+- Migrations 001-009 in `supabase/migrations/`. 006 (newsletter), 007 (function search_path), 008 (rsvp source/nullable-email/dedup), 009 (blog posts) were applied to prod via the MCP and recorded as files.
 - RLS is the real security boundary (admin guards are client-side only). `is_admin()` and `get_my_role()` are SECURITY DEFINER (search_path pinned). Admin-only tables: rsvps, newsletter_subscribers, user_roles.
 - Reproducibility gap: some live objects predate the migration files (`get_users_with_roles`, the `get_my_role()`-based user_roles policies). A clean rebuild from files would miss them. Capture later if needed.
 
@@ -43,17 +44,17 @@ automatically. No secrets are stored here.
 - `event.time` is free-form text. Use `eventDateTimes(date, time)` in `lib/events.ts` for any date math (JSON-LD, .ics). Never `new Date(date + 'T' + time)`.
 - Many hooks fire false-positive Next.js/Vercel-storage/next-cache skill suggestions — this is Astro + Supabase; ignore them.
 
-## NEXT TASK: Blog (design approved, ready to build)
+## Blog (shipped & live 2026-06-24, PR #8)
 
-In-house, simple, mirror the events CMS. Approved scope:
-- Data: new `posts` table — slug (unique), title_de/en/ar, body_de/en/ar (rich HTML), excerpt_de/en/ar, cover image (Supabase storage like events), status (draft/published), published_at, created_at, updated_at. RLS: public reads published, admins manage all. Add as migration 009 + apply via MCP.
-- Public: `/blog` (+ `/en/blog`, `/ar/blog`) listing (cover, title, excerpt, date, newest first) and `/blog/[slug]` post pages (sanitized HTML body, SEO meta + Article/BlogPosting JSON-LD + hreflang). Add "Blog" to the header nav (Header.astro) and the sitemap.
-- Admin: `/admin/blog` list + create/edit/delete reusing the existing `RichTextEditor`, cover-image upload, slug, multilingual fields, draft/publish toggle (mirror `EventForm`/`ContentEditor`). Add "Blog" to the admin sidebar (`AdminLayout.astro` navItems).
-- v1 scope decisions (approved): drafts+publish yes; NO comments, tags, or RSS; include the excerpt field; Blog in main nav. RSS is cheap to add later if asked.
+Built in-house mirroring the events CMS. Key files: migration `009_blog_posts.sql`, `lib/blog.ts`, `components/BlogList.astro` + `BlogPostView.astro`, `components/admin/BlogForm.svelte` + `BlogManager.svelte`, routes under `src/pages/blog/`, `src/pages/en/blog/`, `src/pages/ar/blog/`, and `src/pages/admin/blog/`.
 
-## After blog
+- Data: `posts` table (slug unique, title/excerpt/body de/en/ar, cover_image_url, status draft/published, published_at, timestamps). RLS = public reads published, admins manage all via `is_admin()`. Covers reuse the existing `event-images` bucket.
+- Gotcha handled: the admin list (`BlogManager`) and the edit-page fetch (`BlogForm` in edit mode) run CLIENT-SIDE with the admin session, because anon SSR can only read published rows via RLS, so drafts would be invisible to a server-side fetch. The public listing/detail fetch published rows via the anon client in `.astro` frontmatter, which is fine.
+- v1 scope as approved: drafts/publish yes, excerpt yes, NO comments/tags/RSS. RSS is cheap to add later if asked.
 
-- Email agent for Suraya: an address only she emails that sets up events / makes site changes for her. Likely on Ibrahim's VPS. Data is in Supabase so the agent writes via API. Separate effort.
+## NEXT TASK: Email agent for Suraya
+
+- An address only she emails that sets up events / makes site changes for her. Likely on Ibrahim's VPS. Data is in Supabase so the agent writes via API. Separate effort.
 
 ## Open / deferred (lower priority)
 
