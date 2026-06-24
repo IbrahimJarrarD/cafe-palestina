@@ -1,11 +1,13 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { supabase } from '../../lib/supabase';
-  
+
   export let settings: any[] = [];
-  
+
   let saving = false;
   let success = '';
   let error = '';
+  let unsaved = 0; // inputs edited but not yet persisted
   
   // Group settings
   const groups = [
@@ -94,14 +96,41 @@
     }
   }
   
+  // Persist a pending edit now (used by the debounce timer and by blur).
+  function flush(input: HTMLInputElement, setting: any, lang?: string) {
+    clearTimeout((input as any)._saveTimeout);
+    if ((input as any)._dirty) {
+      (input as any)._dirty = false;
+      unsaved = Math.max(0, unsaved - 1);
+      saveSetting(setting, input.value, lang);
+    }
+  }
+
   function handleInput(event: Event, setting: any, lang?: string) {
     const input = event.target as HTMLInputElement;
-    // Debounce save
+    if (!(input as any)._dirty) {
+      (input as any)._dirty = true;
+      unsaved += 1;
+    }
+    // Debounce, but also flush on blur so a quick navigation can't drop the edit.
     clearTimeout((input as any)._saveTimeout);
-    (input as any)._saveTimeout = setTimeout(() => {
-      saveSetting(setting, input.value, lang);
-    }, 1000);
+    (input as any)._saveTimeout = setTimeout(() => flush(input, setting, lang), 1000);
   }
+
+  function handleBlur(event: Event, setting: any, lang?: string) {
+    flush(event.target as HTMLInputElement, setting, lang);
+  }
+
+  onMount(() => {
+    const warnUnsaved = (e: BeforeUnloadEvent) => {
+      if (unsaved > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', warnUnsaved);
+    return () => window.removeEventListener('beforeunload', warnUnsaved);
+  });
 </script>
 
 <div class="settings-editor">
@@ -131,6 +160,7 @@
                       type="text"
                       value={setting.value_de || ''}
                       on:input={(e) => handleInput(e, setting, 'de')}
+                      on:blur={(e) => handleBlur(e, setting, 'de')}
                       placeholder="German"
                     />
                   </div>
@@ -140,6 +170,7 @@
                       type="text"
                       value={setting.value_en || ''}
                       on:input={(e) => handleInput(e, setting, 'en')}
+                      on:blur={(e) => handleBlur(e, setting, 'en')}
                       placeholder="English"
                     />
                   </div>
@@ -149,6 +180,7 @@
                       type="text"
                       value={setting.value_ar || ''}
                       on:input={(e) => handleInput(e, setting, 'ar')}
+                      on:blur={(e) => handleBlur(e, setting, 'ar')}
                       placeholder="Arabic"
                       dir="rtl"
                     />
@@ -160,6 +192,7 @@
                   id={key}
                   value={setting.value || ''}
                   on:input={(e) => handleInput(e, setting)}
+                  on:blur={(e) => handleBlur(e, setting)}
                   placeholder={getPlaceholder(key)}
                 />
               {/if}

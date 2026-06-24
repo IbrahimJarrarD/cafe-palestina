@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import type { Language } from '../i18n/translations';
   import { t } from '../i18n/translations';
   import { sanitizeHtml } from '../lib/sanitize';
@@ -33,6 +33,8 @@
   let isOpen = false;
   let event: ModalEvent | null = null;
   let exportComponent: EventExport;
+  let modalEl: HTMLElement;
+  let lastFocused: HTMLElement | null = null;
   
   $: tr = t(lang);
   
@@ -66,21 +68,56 @@
     }
   }
   
-  function openModal(e: CustomEvent<ModalEvent>) {
+  async function openModal(e: CustomEvent<ModalEvent>) {
+    lastFocused = (document.activeElement as HTMLElement) ?? null;
     event = e.detail;
     isOpen = true;
     document.body.style.overflow = 'hidden';
+    // Move focus into the dialog once it has rendered.
+    await tick();
+    (modalEl?.querySelector('.modal-close') as HTMLElement | null)?.focus();
   }
-  
+
   function closeModal() {
     isOpen = false;
     document.body.style.overflow = '';
     event = null;
+    // Restore focus to whatever opened the modal.
+    lastFocused?.focus?.();
+    lastFocused = null;
   }
   
   function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape' && isOpen) {
+    if (!isOpen) return;
+
+    if (e.key === 'Escape') {
       closeModal();
+      return;
+    }
+
+    // Trap focus inside the dialog while it is open.
+    if (e.key === 'Tab' && modalEl) {
+      const focusable = Array.from(
+        modalEl.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, textarea, select, iframe, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null);
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (!modalEl.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   }
   
@@ -145,7 +182,7 @@
 
 {#if isOpen && event}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions a11y_click_events_have_key_events -->
-  <div class="modal-backdrop" on:click={handleBackdropClick} on:keydown={handleKeydown} role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
+  <div bind:this={modalEl} class="modal-backdrop" on:click={handleBackdropClick} on:keydown={handleKeydown} role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
     <div class="modal-content">
       <button class="modal-close" on:click={closeModal} aria-label="Close">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
