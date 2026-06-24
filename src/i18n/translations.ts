@@ -79,6 +79,20 @@ export const translations = {
       error: 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.',
       already: 'Diese E-Mail-Adresse ist bereits angemeldet.',
     },
+
+    // RSVP
+    rsvp: {
+      title: 'Anmelden',
+      name: 'Name',
+      email: 'E-Mail',
+      guests: 'Anzahl Personen',
+      message: 'Nachricht (optional)',
+      submit: 'Anmelden',
+      success: 'Danke! Deine Anmeldung ist eingegangen.',
+      already: 'Mit dieser E-Mail bist du bereits angemeldet.',
+      error: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
+      privacy: 'Wir verwenden deine Angaben nur zur Verwaltung deiner Anmeldung.',
+    },
   },
   
   en: {
@@ -150,6 +164,20 @@ export const translations = {
       error: 'Something went wrong. Please try again later.',
       already: 'This email is already subscribed.',
     },
+
+    // RSVP
+    rsvp: {
+      title: 'RSVP',
+      name: 'Name',
+      email: 'Email',
+      guests: 'Number of guests',
+      message: 'Message (optional)',
+      submit: 'Register',
+      success: 'Thank you! Your registration is in.',
+      already: 'You are already registered with this email.',
+      error: 'Something went wrong. Please try again.',
+      privacy: 'We use your details only to manage your registration.',
+    },
   },
   
   ar: {
@@ -220,6 +248,20 @@ export const translations = {
       privacyLink: 'سياسة الخصوصية',
       error: 'حدث خطأ ما. يرجى المحاولة مرة أخرى لاحقاً.',
       already: 'هذا البريد الإلكتروني مشترك بالفعل.',
+    },
+
+    // RSVP
+    rsvp: {
+      title: 'التسجيل',
+      name: 'الاسم',
+      email: 'البريد الإلكتروني',
+      guests: 'عدد الأشخاص',
+      message: 'رسالة (اختياري)',
+      submit: 'سجّل',
+      success: 'شكراً! تم استلام تسجيلك.',
+      already: 'أنت مسجل بالفعل بهذا البريد الإلكتروني.',
+      error: 'حدث خطأ ما. يرجى المحاولة مرة أخرى.',
+      privacy: 'نستخدم بياناتك فقط لإدارة تسجيلك.',
     },
   },
 } as const;

@@ -4,6 +4,7 @@
   import { t } from '../i18n/translations';
   import { sanitizeHtml } from '../lib/sanitize';
   import EventExport from './EventExport.svelte';
+  import RsvpForm from './RsvpForm.svelte';
   
   export let lang: Language;
   
@@ -256,7 +257,11 @@
       {/if}
       
       <div class="modal-description">{@html sanitizeHtml(description)}</div>
-      
+
+      {#key event.id}
+        <RsvpForm eventId={event.id} {lang} />
+      {/key}
+
       <div class="modal-actions">
         <button class="action-btn action-primary" on:click={addToCalendar}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

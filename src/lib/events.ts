@@ -92,27 +92,29 @@ export async function submitRSVP(data: {
   guests?: number;
   message?: string;
 }) {
-  const { data: rsvp, error } = await supabase
+  // No .select() here: the anon role cannot read rsvps back (admin-only SELECT),
+  // so chaining .single() would error even on a successful insert.
+  const { error } = await supabase
     .from('rsvps')
     .insert({
       event_id: data.eventId,
-      email: data.email,
-      name: data.name,
+      email: data.email.trim().toLowerCase(),
+      name: data.name.trim(),
       guests: data.guests || 1,
-      message: data.message || null,
-    } as never)
-    .select()
-    .single();
+      message: data.message?.trim() || null,
+      source: 'website',
+    } as never);
 
   if (error) {
-    // Check if duplicate
+    // Unique violation = already registered for this event with this email.
     if (error.code === '23505') {
       return { success: false, error: 'already_registered' as const };
     }
+    console.error('[events] submitRSVP failed:', error.message);
     return { success: false, error: 'unknown' as const };
   }
 
-  return { success: true, rsvp };
+  return { success: true as const };
 }
 
 // Helper: Get localized category name
