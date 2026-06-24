@@ -10,6 +10,9 @@ interface Props {
 
 const { lang } = Astro.props;
 const tr = t(lang);
+
+// Blog is a real route (not an in-page anchor), so it works from any page.
+const blogHref = lang === 'de' ? '/blog' : `/${lang}/blog`;
 ---
 
 <header class="header">
@@ -24,6 +27,7 @@ const tr = t(lang);
 
     <nav class="nav">
       <a href="#events" class="nav-link">{tr.nav.events}</a>
+      <a href={blogHref} class="nav-link">{tr.nav.blog}</a>
       <a href="#about" class="nav-link">{tr.nav.about}</a>
       <a href="#contact" class="nav-link">{tr.nav.contact}</a>
     </nav>
@@ -56,6 +60,7 @@ const tr = t(lang);
   <div class="mobile-menu-links">
     <a href={lang === 'de' ? '/' : `/${lang}`} class="mobile-nav-link">{tr.nav.home}</a>
     <a href="#events" class="mobile-nav-link">{tr.nav.events}</a>
+    <a href={blogHref} class="mobile-nav-link">{tr.nav.blog}</a>
     <a href="#about" class="mobile-nav-link">{tr.nav.about}</a>
     <a href="#contact" class="mobile-nav-link">{tr.nav.contact}</a>
   </div>

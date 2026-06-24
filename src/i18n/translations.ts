@@ -6,6 +6,7 @@ export const translations = {
     nav: {
       home: 'Startseite',
       events: 'Veranstaltungen',
+      blog: 'Blog',
       about: 'Über uns',
       contact: 'Kontakt',
     },
@@ -81,6 +82,15 @@ export const translations = {
       already: 'Diese E-Mail-Adresse ist bereits angemeldet.',
     },
 
+    // Blog
+    blog: {
+      title: 'Blog',
+      subtitle: 'Geschichten, Neuigkeiten und Stimmen aus unserer Gemeinschaft',
+      readMore: 'Weiterlesen',
+      backToBlog: 'Zurück zum Blog',
+      empty: 'Noch keine Beiträge.',
+    },
+
     // RSVP
     rsvp: {
       title: 'Anmelden',
@@ -100,6 +110,7 @@ export const translations = {
     nav: {
       home: 'Home',
       events: 'Events',
+      blog: 'Blog',
       about: 'About',
       contact: 'Contact',
     },
@@ -167,6 +178,15 @@ export const translations = {
       already: 'This email is already subscribed.',
     },
 
+    // Blog
+    blog: {
+      title: 'Blog',
+      subtitle: 'Stories, news, and voices from our community',
+      readMore: 'Read more',
+      backToBlog: 'Back to Blog',
+      empty: 'No posts yet.',
+    },
+
     // RSVP
     rsvp: {
       title: 'RSVP',
@@ -186,6 +206,7 @@ export const translations = {
     nav: {
       home: 'الرئيسية',
       events: 'الفعاليات',
+      blog: 'المدونة',
       about: 'من نحن',
       contact: 'التواصل',
     },
@@ -251,6 +272,15 @@ export const translations = {
       privacyLink: 'سياسة الخصوصية',
       error: 'حدث خطأ ما. يرجى المحاولة مرة أخرى لاحقاً.',
       already: 'هذا البريد الإلكتروني مشترك بالفعل.',
+    },
+
+    // Blog
+    blog: {
+      title: 'المدونة',
+      subtitle: 'قصص وأخبار وأصوات من مجتمعنا',
+      readMore: 'اقرأ المزيد',
+      backToBlog: 'العودة إلى المدونة',
+      empty: 'لا توجد مقالات بعد.',
     },
 
     // RSVP

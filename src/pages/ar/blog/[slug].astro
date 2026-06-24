@@ -1,0 +1,31 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import BlogPostView from '../../../components/BlogPostView.astro';
+import { getPostBySlug, getPostTitle, getPostDescription } from '../../../lib/blog';
+
+const lang = 'ar';
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect('/ar/blog');
+}
+
+const post = await getPostBySlug(slug);
+
+if (!post) {
+  return Astro.redirect('/ar/blog');
+}
+
+const title = getPostTitle(post, lang);
+const description = getPostDescription(post, lang);
+---
+
+<Layout title={`${title} | Cafe Palestine Colonia`} description={description} lang={lang}>
+  <Header lang={lang} />
+  <main>
+    <BlogPostView post={post} lang={lang} />
+  </main>
+  <Footer lang={lang} />
+</Layout>

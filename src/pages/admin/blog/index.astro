@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import BlogManager from '../../../components/admin/BlogManager.svelte';
+---
+
+<AdminLayout title="Blog" activeSection="blog">
+  <BlogManager client:load />
+</AdminLayout>
