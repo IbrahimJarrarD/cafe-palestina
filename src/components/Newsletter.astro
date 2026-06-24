@@ -8,6 +8,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const tr = t(lang);
+const langPrefix = lang === 'de' ? '' : `/${lang}`;
 ---
 
 <section class="newsletter-section" id="newsletter">
@@ -30,22 +31,34 @@ const tr = t(lang);
         <h2>{tr.newsletter.title}</h2>
         <p>{tr.newsletter.description}</p>
         
-        <form class="newsletter-form" id="newsletterForm">
+        <form
+          class="newsletter-form"
+          id="newsletterForm"
+          data-lang={lang}
+          data-success={tr.newsletter.success}
+          data-error={tr.newsletter.error}
+          data-already={tr.newsletter.already}
+        >
           <div class="form-group">
-            <input 
-              type="email" 
+            <input
+              type="email"
               name="email"
               placeholder={tr.newsletter.placeholder}
               required
               class="newsletter-input"
             />
-            <button type="submit" class="newsletter-btn">
+            <button type="submit" class="newsletter-btn" id="newsletterBtn">
               {tr.newsletter.button}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </button>
           </div>
+          <label class="newsletter-consent">
+            <input type="checkbox" name="consent" required />
+            <span>{tr.newsletter.consent}<a href={`${langPrefix}/datenschutz`}>{tr.newsletter.privacyLink}</a></span>
+          </label>
+          <p class="newsletter-status" id="newsletterStatus" role="status" aria-live="polite"></p>
         </form>
       </div>
     </div>
@@ -182,11 +195,48 @@ const tr = t(lang);
     transform: scaleX(-1) translateX(-4px);
   }
   
+  .newsletter-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    max-width: 450px;
+    margin: var(--space-md) auto 0;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  :global([dir="rtl"]) .newsletter-consent {
+    text-align: right;
+  }
+
+  .newsletter-consent input {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .newsletter-consent a {
+    color: var(--gold-light);
+    text-decoration: underline;
+  }
+
+  .newsletter-status {
+    max-width: 450px;
+    margin: var(--space-md) auto 0;
+    font-size: 0.9rem;
+    min-height: 1.2em;
+  }
+
+  .newsletter-status.is-success { color: #bbf7d0; }
+  .newsletter-status.is-error { color: #fecaca; }
+
   @media (max-width: 600px) {
     .form-group {
       flex-direction: column;
     }
-    
+
     .newsletter-btn {
       width: 100%;
       justify-content: center;
@@ -195,24 +245,38 @@ const tr = t(lang);
 </style>
 
 <script>
-  const form = document.getElementById('newsletterForm');
-  
-  form?.addEventListener('submit', (e) => {
+  import { subscribeNewsletter } from '../lib/newsletter';
+
+  const form = document.getElementById('newsletterForm') as HTMLFormElement | null;
+  const statusEl = document.getElementById('newsletterStatus');
+  const btn = document.getElementById('newsletterBtn') as HTMLButtonElement | null;
+
+  form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(form as HTMLFormElement);
-    const email = formData.get('email');
-    
-    // Show success message
-    const lang = document.documentElement.lang as 'de' | 'en' | 'ar';
-    const messages = {
-      de: 'Danke! Willkommen in unserer Community.',
-      en: 'Thank you! Welcome to our community.',
-      ar: 'شكراً! أهلاً بك في مجتمعنا.'
-    };
-    const message = messages[lang] || messages.en;
-    
-    alert(message);
-    (form as HTMLFormElement).reset();
+    if (!form || !statusEl) return;
+
+    const data = new FormData(form);
+    const email = String(data.get('email') || '').trim();
+    const consent = data.get('consent') === 'on';
+    const lang = (form.dataset.lang || 'en') as 'de' | 'en' | 'ar';
+    if (!email || !consent) return;
+
+    if (btn) btn.disabled = true;
+    statusEl.textContent = '';
+    statusEl.className = 'newsletter-status';
+
+    const res = await subscribeNewsletter(email, lang, consent);
+
+    if (res.success || res.error === 'already') {
+      statusEl.textContent = res.success ? (form.dataset.success || '') : (form.dataset.already || '');
+      statusEl.classList.add('is-success');
+      form.reset();
+    } else {
+      statusEl.textContent = form.dataset.error || '';
+      statusEl.classList.add('is-error');
+    }
+
+    if (btn) btn.disabled = false;
   });
 </script>
 
