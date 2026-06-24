@@ -5,6 +5,7 @@
   import { sanitizeHtml } from '../lib/sanitize';
   import EventExport from './EventExport.svelte';
   import RsvpForm from './RsvpForm.svelte';
+  import { eventDateTimes } from '../lib/events';
   
   export let lang: Language;
   
@@ -167,7 +168,58 @@
       alert(msg[lang]);
     }
   }
-  
+
+  // Universal calendar download (.ics) — works with Apple Calendar, Outlook, etc.
+  function downloadIcs() {
+    if (!event) return;
+    const dt = eventDateTimes(event.date, event.time);
+    const esc = (s: string) => (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+    const plain = (html: string) => (html || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 300);
+    const compact = (iso: string) => iso.replace(/[-:]/g, '');
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const addHours = (iso: string, h: number) => {
+      const [d, tm] = iso.split('T');
+      const [Y, M, D] = d.split('-').map(Number);
+      const [hh, mm, ss] = tm.split(':').map(Number);
+      const x = new Date(Y, M - 1, D, hh + h, mm, ss || 0);
+      return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}T${pad(x.getHours())}:${pad(x.getMinutes())}:${pad(x.getSeconds())}`;
+    };
+
+    let dtStart: string, dtEnd: string;
+    if (!dt.start.includes('T')) {
+      const next = new Date(`${event.date}T00:00`);
+      next.setDate(next.getDate() + 1);
+      dtStart = `DTSTART;VALUE=DATE:${compact(dt.start)}`;
+      dtEnd = `DTEND;VALUE=DATE:${compact(next.toISOString().slice(0, 10))}`;
+    } else {
+      const endIso = dt.end || addHours(dt.start, 2);
+      dtStart = `DTSTART:${compact(dt.start)}`;
+      dtEnd = `DTEND:${compact(endIso)}`;
+    }
+
+    const stamp = `${compact(new Date().toISOString().slice(0, 19))}Z`;
+    const lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Cafe Palestine Colonia//EN', 'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      `UID:${event.id}@cafepalestinecolonia.de`,
+      `DTSTAMP:${stamp}`,
+      dtStart, dtEnd,
+      `SUMMARY:${esc(title)}`,
+      `LOCATION:${esc([event.location, event.address].filter(Boolean).join(', '))}`,
+      `DESCRIPTION:${esc(plain(description))}`,
+      'END:VEVENT', 'END:VCALENDAR',
+    ];
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${event.slug || 'event'}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   onMount(() => {
     window.addEventListener('open-event-modal', openModal as EventListener);
     window.addEventListener('keydown', handleKeydown);
@@ -297,6 +349,15 @@
       </div>
 
       <div class="modal-exports">
+        <button class="export-btn" on:click={downloadIcs}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          {tr.modal.ical}
+        </button>
         <button class="export-btn" on:click={() => exportComponent?.exportPDF()}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>

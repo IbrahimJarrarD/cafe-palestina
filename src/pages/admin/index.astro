@@ -56,7 +56,7 @@ const { data: upcomingEvents } = await supabase
       <div class="stat-card">
         <div class="stat-icon">✉️</div>
         <div class="stat-content">
-          <span class="stat-value">{rsvpsCount || 0}</span>
+          <span class="stat-value" id="statRsvpCount">{rsvpsCount || 0}</span>
           <span class="stat-label">Total RSVPs</span>
         </div>
       </div>
@@ -109,7 +109,7 @@ const { data: upcomingEvents } = await supabase
           <h2>Recent RSVPs</h2>
           <a href="/admin/rsvps" class="view-all">View All →</a>
         </div>
-        <div class="card-body">
+        <div class="card-body" id="recentRsvpsList">
           {recentRsvps && recentRsvps.length > 0 ? (
             <div class="rsvp-list">
               {recentRsvps.map((rsvp: any) => (
@@ -134,6 +134,48 @@ const { data: upcomingEvents } = await supabase
       </div>
     </div>
   </div>
+
+  <script>
+    // RSVPs are admin-only under RLS, so the server-rendered counts come back
+    // empty (anon). Re-fetch them in the browser with the admin's session.
+    import { supabase } from '../../lib/supabase';
+    (async () => {
+      const countEl = document.getElementById('statRsvpCount');
+      const listEl = document.getElementById('recentRsvpsList');
+
+      const { count } = await supabase
+        .from('rsvps')
+        .select('*', { count: 'exact', head: true })
+        .is('cancelled_at', null);
+      if (countEl) countEl.textContent = String(count ?? 0);
+
+      const { data } = await supabase
+        .from('rsvps')
+        .select('*, events(title_en, title_de)')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (!listEl || !data || data.length === 0) return;
+
+      listEl.innerHTML = '';
+      const wrap = document.createElement('div');
+      wrap.className = 'rsvp-list';
+      for (const r of data as any[]) {
+        const item = document.createElement('div'); item.className = 'rsvp-item';
+        const info = document.createElement('div'); info.className = 'rsvp-info';
+        const name = document.createElement('span'); name.className = 'rsvp-name'; name.textContent = r.name || '';
+        const email = document.createElement('span'); email.className = 'rsvp-email'; email.textContent = r.email || '';
+        info.append(name, email);
+        const meta = document.createElement('div'); meta.className = 'rsvp-meta';
+        const ev = document.createElement('span'); ev.className = 'rsvp-event'; ev.textContent = (r.events && r.events.title_en) || 'Unknown Event';
+        const guests = document.createElement('span'); guests.className = 'rsvp-guests';
+        const n = r.guests || 1; guests.textContent = n + ' guest' + (n > 1 ? 's' : '');
+        meta.append(ev, guests);
+        item.append(info, meta);
+        wrap.append(item);
+      }
+      listEl.append(wrap);
+    })();
+  </script>
 </AdminLayout>
 
 <style>

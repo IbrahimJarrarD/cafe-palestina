@@ -11,12 +11,16 @@
   let email = '';
   let guests = 1;
   let message = '';
+  let honeypot = '';
   let submitting = false;
   let done = false;
   let status: '' | 'success' | 'already' | 'error' = '';
 
   async function handleSubmit() {
     if (submitting || !name.trim() || !email.trim()) return;
+    // Honeypot: this field is invisible to people; bots tend to fill it. If it
+    // has a value, pretend success and skip the insert.
+    if (honeypot.trim()) { status = 'success'; done = true; return; }
     submitting = true;
     status = '';
     const res = await submitRSVP({ eventId, email, name, guests, message });
@@ -54,6 +58,7 @@
         </button>
       </div>
       <textarea class="rsvp-input" bind:value={message} placeholder={tr.message} rows="2"></textarea>
+      <input class="hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" bind:value={honeypot} />
       {#if status === 'error'}
         <p class="rsvp-error">{tr.error}</p>
       {/if}
@@ -165,6 +170,14 @@
     font-size: 0.75rem;
     color: var(--ink-light, #6b7280);
     margin: 0;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
   }
 
   @media (max-width: 480px) {
