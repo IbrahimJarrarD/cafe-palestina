@@ -93,8 +93,11 @@
   function addToCalendar() {
     if (!event) return;
     
-    const startDate = new Date(event.date + 'T' + event.time.split(' - ')[0]);
-    const endDate = new Date(event.date + 'T' + (event.time.split(' - ')[1] || event.time.split(' - ')[0]));
+    // event.time is free-form text (e.g. "18:00 - 20:00", "19:30 Uhr"); extract
+    // HH:MM defensively so an unparseable value can't produce an Invalid Date.
+    const times = (event.time || '').match(/\d{1,2}:\d{2}/g) || [];
+    const startDate = new Date(`${event.date}T${times[0] || '00:00'}`);
+    const endDate = new Date(`${event.date}T${times[1] || times[0] || '00:00'}`);
     
     const formatDate = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     

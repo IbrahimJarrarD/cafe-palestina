@@ -43,6 +43,7 @@ export async function getEvents(): Promise<EventWithRelations[]> {
     .order('date', { ascending: true });
 
   if (error) {
+    console.error('[events] getEvents failed:', error.message);
     return [];
   }
 

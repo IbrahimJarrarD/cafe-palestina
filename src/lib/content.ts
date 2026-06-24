@@ -22,6 +22,7 @@ export async function getActiveAnnouncement(): Promise<Announcement | null> {
   if (error) {
     // No active announcement is fine
     if (error.code === 'PGRST116') return null;
+    console.error('[content] getActiveAnnouncement failed:', error.message);
     return null;
   }
 
@@ -51,6 +52,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     .select('*');
 
   if (error) {
+    console.error('[content] getSiteSettings failed:', error.message);
     return {};
   }
 
@@ -98,6 +100,7 @@ export async function getPageContent(): Promise<PageContentMap> {
     .select('*');
 
   if (error) {
+    console.error('[content] getPageContent failed:', error.message);
     return {};
   }
 
