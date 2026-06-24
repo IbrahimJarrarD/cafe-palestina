@@ -41,6 +41,7 @@ export const translations = {
       location: 'Ort',
       downloadPdf: 'PDF Einladung',
       downloadInsta: 'Instagram Bild',
+      ical: 'Kalender (.ics)',
     },
     
     // Categories
@@ -130,6 +131,7 @@ export const translations = {
       location: 'Location',
       downloadPdf: 'PDF Invitation',
       downloadInsta: 'Instagram Image',
+      ical: 'Calendar (.ics)',
     },
     
     categories: {
@@ -215,6 +217,7 @@ export const translations = {
       location: 'الموقع',
       downloadPdf: 'دعوة PDF',
       downloadInsta: 'صورة انستغرام',
+      ical: 'تقويم (.ics)',
     },
     
     categories: {

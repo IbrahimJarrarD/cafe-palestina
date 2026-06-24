@@ -175,7 +175,7 @@
         </select>
         <input type="text" bind:value={addName} placeholder="Name" />
         <input type="email" bind:value={addEmail} placeholder="Email (optional)" />
-        <input type="number" bind:value={addGuests} min="1" max="20" title="Guests" />
+        <input type="number" class="add-guests" bind:value={addGuests} min="1" max="20" title="Guests" placeholder="Guests" />
         <button class="btn btn-primary" on:click={addOne} disabled={adding}>{adding ? '…' : 'Add'}</button>
       </div>
     </div>
@@ -258,6 +258,7 @@
 
   .add-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .add-row select, .add-row input { flex: 1; min-width: 110px; }
+  .add-row .add-guests { flex: 0 0 90px; min-width: 90px; }
 
   select, input, textarea {
     padding: 0.55rem 0.7rem; font-size: 0.9rem; font-family: inherit;
