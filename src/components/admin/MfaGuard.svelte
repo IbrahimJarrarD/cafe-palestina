@@ -38,12 +38,14 @@
       const verifiedFactors = (factorsData?.totp || []).filter((f: any) => f.status === 'verified');
 
       if (verifiedFactors.length > 0) {
-        // Has enrolled factor — needs to verify
+        // Has an enrolled factor — still must complete the 2FA challenge.
         factorId = verifiedFactors[0].id;
         state = 'verify';
       } else {
-        // No factors — needs to enroll
-        state = 'enroll';
+        // 2FA is optional: admins without an enrolled factor are let in with
+        // their password (deliberate usability tradeoff). The enroll flow stays
+        // in the code for re-enabling mandatory 2FA or an opt-in entry point.
+        state = 'passed';
       }
     } catch (err: any) {
       // Surface the failure with an escape hatch instead of hanging on "loading".
