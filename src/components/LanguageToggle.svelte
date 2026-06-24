@@ -5,15 +5,10 @@
   
   function switchLanguage(lang: Language) {
     if (lang === currentLang) return;
-    
-    // Navigate to the other language version
-    if (lang === 'ar') {
-      window.location.href = '/ar';
-    } else if (lang === 'en') {
-      window.location.href = '/en';
-    } else {
-      window.location.href = '/';
-    }
+
+    const hash = window.location.hash;
+    const base = lang === 'de' ? '/' : `/${lang}`;
+    window.location.href = base + hash;
   }
 </script>
 

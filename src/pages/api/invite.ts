@@ -18,8 +18,15 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: 'Invalid session' }), { status: 401 });
     }
 
+    // Use the service-role client for DB lookups and the invite. The caller's
+    // identity is already verified above via getUser(token). We cannot use the
+    // anon client for the role lookup: getUser(token) validates the JWT but does
+    // not attach it to .from() queries, so RLS sees auth.uid() as null and the
+    // "view own role" policy returns no row, failing every caller (even admins).
+    const serverClient = createServerClient();
+
     // Check caller's role
-    const { data: roleData } = await supabase
+    const { data: roleData } = await serverClient
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
@@ -37,9 +44,13 @@ export const POST: APIRoute = async ({ request }) => {
 
     const inviteRole = role === 'admin' ? 'admin' : 'user';
 
-    // Use the service role client to invite the user
-    const serverClient = createServerClient();
-    const { data: inviteData, error: inviteError } = await serverClient.auth.admin.inviteUserByEmail(email);
+    // Send the invite with an explicit redirect to our set-password page, so the
+    // email link lands on the live site instead of the Supabase "Site URL"
+    // fallback. PUBLIC_SITE_URL must also be in the Supabase redirect allow-list.
+    const siteUrl = import.meta.env.PUBLIC_SITE_URL || new URL(request.url).origin;
+    const { data: inviteData, error: inviteError } = await serverClient.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `${siteUrl}/admin/set-password`,
+    });
 
     if (inviteError) {
       return new Response(JSON.stringify({ error: inviteError.message }), { status: 400 });
@@ -59,6 +70,7 @@ export const POST: APIRoute = async ({ request }) => {
     }), { status: 200 });
 
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message || 'Server error' }), { status: 500 });
+    console.error('[api/invite] error:', err);
+    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 });
   }
 };

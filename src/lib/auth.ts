@@ -17,6 +17,17 @@ export async function signIn(email: string, password: string) {
   return { success: true, user: data.user, session: data.session };
 }
 
+// Set/update the current user's password.
+// Used by the invite + password-recovery flow, where Supabase has already
+// established a temporary session from the email link.
+export async function setPassword(password: string) {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  return { success: true };
+}
+
 // Sign out
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
@@ -100,40 +111,4 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
   
   return { success: true };
 }
-
-// Create admin user (run once via Supabase Dashboard or SQL)
-// Go to Authentication > Users > Add user
-// Or use this SQL in Supabase SQL Editor:
-/*
--- Create admin user (replace with your email)
-INSERT INTO auth.users (
-  instance_id,
-  id,
-  aud,
-  role,
-  email,
-  encrypted_password,
-  email_confirmed_at,
-  created_at,
-  updated_at,
-  confirmation_token,
-  email_change,
-  email_change_token_new,
-  recovery_token
-) VALUES (
-  '00000000-0000-0000-0000-000000000000',
-  gen_random_uuid(),
-  'authenticated',
-  'authenticated',
-  'admin@cafepalestine.de',
-  crypt('YOUR_SECURE_PASSWORD', gen_salt('bf')),
-  NOW(),
-  NOW(),
-  NOW(),
-  '',
-  '',
-  '',
-  ''
-);
-*/
 

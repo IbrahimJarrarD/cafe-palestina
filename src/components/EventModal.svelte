@@ -93,8 +93,11 @@
   function addToCalendar() {
     if (!event) return;
     
-    const startDate = new Date(event.date + 'T' + event.time.split(' - ')[0]);
-    const endDate = new Date(event.date + 'T' + (event.time.split(' - ')[1] || event.time.split(' - ')[0]));
+    // event.time is free-form text (e.g. "18:00 - 20:00", "19:30 Uhr"); extract
+    // HH:MM defensively so an unparseable value can't produce an Invalid Date.
+    const times = (event.time || '').match(/\d{1,2}:\d{2}/g) || [];
+    const startDate = new Date(`${event.date}T${times[0] || '00:00'}`);
+    const endDate = new Date(`${event.date}T${times[1] || times[0] || '00:00'}`);
     
     const formatDate = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     
@@ -142,7 +145,7 @@
 
 {#if isOpen && event}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions a11y_click_events_have_key_events -->
-  <div class="modal-backdrop" on:click={handleBackdropClick} on:keydown={handleKeydown} role="dialog" aria-modal="true" tabindex="-1">
+  <div class="modal-backdrop" on:click={handleBackdropClick} on:keydown={handleKeydown} role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
     <div class="modal-content">
       <button class="modal-close" on:click={closeModal} aria-label="Close">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -156,7 +159,7 @@
           <span class="badge-icon">{event.category_icon}</span>
           {categoryName}
         </span>
-        <h2 class="modal-title">{title}</h2>
+        <h2 class="modal-title" id="modal-title">{title}</h2>
       </div>
       
       <div class="modal-meta">

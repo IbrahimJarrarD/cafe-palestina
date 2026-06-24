@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { supabase } from '../../lib/supabase';
 
-  type MfaState = 'loading' | 'enroll' | 'verify' | 'passed';
+  type MfaState = 'loading' | 'enroll' | 'verify' | 'passed' | 'error';
 
   let state: MfaState = 'loading';
   let qrCodeUri = '';
@@ -21,36 +21,40 @@
     state = 'loading';
     error = '';
 
-    const { data, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    try {
+      const { data, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalError) throw aalError;
 
-    if (aalError) {
-      error = aalError.message;
-      state = 'enroll';
-      return;
+      // If already at AAL2, user has verified MFA this session
+      if (data.currentLevel === 'aal2') {
+        state = 'passed';
+        return;
+      }
+
+      // Check enrolled TOTP factors directly
+      const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
+      if (factorsError) throw factorsError;
+
+      const verifiedFactors = (factorsData?.totp || []).filter((f: any) => f.status === 'verified');
+
+      if (verifiedFactors.length > 0) {
+        // Has enrolled factor — needs to verify
+        factorId = verifiedFactors[0].id;
+        state = 'verify';
+      } else {
+        // No factors — needs to enroll
+        state = 'enroll';
+      }
+    } catch (err: any) {
+      // Surface the failure with an escape hatch instead of hanging on "loading".
+      error = err?.message || 'Could not verify your security status.';
+      state = 'error';
     }
+  }
 
-    // If already at AAL2, user has verified MFA this session
-    if (data.currentLevel === 'aal2') {
-      state = 'passed';
-      return;
-    }
-
-    // Check if user has any TOTP factors enrolled
-    const totpFactors = (data.currentAuthenticationMethods || [])
-      .filter((m: any) => m.method === 'totp');
-
-    // Also check the factors list directly
-    const { data: factorsData } = await supabase.auth.mfa.listFactors();
-    const verifiedFactors = (factorsData?.totp || []).filter((f: any) => f.status === 'verified');
-
-    if (verifiedFactors.length > 0) {
-      // Has enrolled factor — needs to verify
-      factorId = verifiedFactors[0].id;
-      state = 'verify';
-    } else {
-      // No factors — needs to enroll
-      state = 'enroll';
-    }
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    window.location.href = '/admin/login';
   }
 
   async function enrollMfa() {
@@ -122,6 +126,7 @@
     <div class="mfa-card">
       <div class="spinner"></div>
       <p>Checking security...</p>
+      <button class="btn-link" on:click={handleSignOut}>Sign out</button>
     </div>
   </div>
 
@@ -178,6 +183,7 @@
           </p>
         </div>
       {/if}
+      <button class="btn-link" on:click={handleSignOut}>Sign out</button>
     </div>
   </div>
 
@@ -207,6 +213,20 @@
       >
         {verifying ? 'Verifying...' : 'Verify'}
       </button>
+      <button class="btn-link" on:click={handleSignOut}>Sign out</button>
+    </div>
+  </div>
+
+{:else if state === 'error'}
+  <div class="mfa-screen">
+    <div class="mfa-card">
+      <div class="mfa-icon">⚠️</div>
+      <h1>Something went wrong</h1>
+      <p>{error || 'We could not verify your security status.'}</p>
+      <div class="mfa-actions">
+        <button class="btn-primary" on:click={checkMfaStatus}>Try again</button>
+        <button class="btn-link" on:click={handleSignOut}>Sign out</button>
+      </div>
     </div>
   </div>
 
@@ -406,5 +426,27 @@
     font-size: 0.8rem;
     color: #9ca3af;
     max-width: 300px;
+  }
+
+  .mfa-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .btn-link {
+    margin-top: 1rem;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .btn-link:hover {
+    color: #6b7280;
   }
 </style>
