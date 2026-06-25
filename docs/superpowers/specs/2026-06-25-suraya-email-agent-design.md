@@ -122,10 +122,15 @@ Before any code is written, the implementer verifies the exact column names of
 ### Outbound: Resend
 
 All replies and notifications go out via Resend, sending as
-`dev@cafepalestinecolonia.de`. Resend adds its own SPF/DKIM (on a subaddress /
-subdomain as needed) which coexists with the Email Routing MX. Cloudflare's own
-Email Sending API is noted as a possible future single-vendor consolidation but is
-not used in v1 (reliability of Resend for transactional mail is the priority).
+`dev@cafepalestinecolonia.de`. Resend adds its own SPF/DKIM (on a send subdomain)
+which coexists with the Email Routing MX. The cafe's volume is far under Resend's
+free tier (100/day, 3,000/month, one custom domain), and Resend is a single REST
+call from n8n. The API key is stored as an n8n credential.
+
+Cloudflare Email Sending was evaluated and rejected for v1: its free tier sends only
+to pre-verified destination addresses (does not fit replying to whoever emails in),
+arbitrary recipients require the Workers Paid plan (~$5/mo), and it is still public
+beta with a 50-recipient cap. No deliverability or volume reason justified the cost.
 
 ## New data: `agent_pending_actions`
 
