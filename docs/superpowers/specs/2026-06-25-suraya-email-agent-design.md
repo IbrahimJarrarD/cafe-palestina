@@ -44,7 +44,7 @@ sender ── email ──> Cloudflare Email Routing + Email Worker
                          v
                     Supabase (events, posts, agent_pending_actions)
                          │
-                    Cloudflare Email Sending ── reply / notify ──> sender, and Ibrahim
+                    Resend ── reply / notify ──> sender, and Ibrahim
 ```
 
 ### Inbound: Cloudflare Email Routing + Email Worker
@@ -87,7 +87,7 @@ New request path:
 - LLM (OpenRouter) classifies intent: `create_event` | `create_blog_post` |
   `out_of_scope`. Guardrails push anything edit/delete/ambiguous/suspicious to
   `out_of_scope`.
-- `out_of_scope` -> forward the original email to Ibrahim and Alaa via Cloudflare Email Sending, and
+- `out_of_scope` -> forward the original email to Ibrahim and Alaa via Resend, and
   reply to the sender in their language ("I can only set up events and blog posts;
   I have passed this to Ibrahim and Alaa").
 - `create_*` -> LLM extracts structured fields, then LLM translates the source
@@ -119,17 +119,13 @@ In practice it only ever inserts into `events` and `posts` and reads/writes
 Before any code is written, the implementer verifies the exact column names of
 `events` and `posts` and the live slug-generation logic against the database.
 
-### Outbound: Cloudflare Email Sending
+### Outbound: Resend
 
-All replies and notifications go out via Cloudflare Email Sending (REST API
-`POST /accounts/{account_id}/email/sending/send`), sending as
-`dev@cafepalestinecolonia.de`. This keeps inbound and outbound on one vendor
-(Cloudflare) and adds no third-party email SaaS, fitting the private/cheap priority.
-It requires the Workers Paid plan (Email Sending is public beta, paid-plan only, ~$5/mo);
-inbound Email Routing stays free. Cloudflare manages DKIM/SPF/DMARC via an onboarded
-cf-bounce subdomain. n8n calls the REST API with a scoped Cloudflare API token
-(`Email Sending: Edit`) stored as an n8n credential. Reply threading uses the
-`[#refcode]` subject tag (client-agnostic), so the plain send endpoint suffices.
+All replies and notifications go out via Resend, sending as
+`dev@cafepalestinecolonia.de`. Resend adds its own SPF/DKIM (on a subaddress /
+subdomain as needed) which coexists with the Email Routing MX. Cloudflare's own
+Email Sending API is noted as a possible future single-vendor consolidation but is
+not used in v1 (reliability of Resend for transactional mail is the priority).
 
 ## New data: `agent_pending_actions`
 
@@ -209,7 +205,7 @@ quality check, and recorded in the agent README.
 - A new `agent/` directory in the cafe-palestina repo holds: the Worker code, the
   n8n workflow JSON export, the SQL migration, env examples, and a README. Per the
   ownership seam, this cafe-domain workflow is versioned here, not in the life repo.
-- Secrets: OpenRouter key, Cloudflare Email Sending key, Supabase service-role key, and the webhook
+- Secrets: OpenRouter key, Resend key, Supabase service-role key, and the webhook
   shared secret are n8n credentials (encrypted by N8N_ENCRYPTION_KEY). The webhook
   URL and shared secret are Cloudflare Worker secrets. Nothing hardcoded; 1Password
   is the source of truth.

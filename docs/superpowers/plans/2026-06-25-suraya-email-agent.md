@@ -4,9 +4,9 @@
 
 **Goal:** A single email address (`dev@cafepalestinecolonia.de`) that Suraya, Alaa, and Ibrahim can write to in plain language to create events and blog posts, with a confirm-before-publish loop and trilingual auto-translation.
 
-**Architecture:** Cloudflare Email Routing + an Email Worker receive and authenticate mail, then POST it to an n8n workflow. n8n (the brain) classifies intent, extracts and translates content into de/en/ar via OpenRouter, holds a draft in Supabase, confirms with the sender, and on an "OK" reply writes the live row to Supabase. Replies and notifications go out via Cloudflare Email Sending.
+**Architecture:** Cloudflare Email Routing + an Email Worker receive and authenticate mail, then POST it to an n8n workflow. n8n (the brain) classifies intent, extracts and translates content into de/en/ar via OpenRouter, holds a draft in Supabase, confirms with the sender, and on an "OK" reply writes the live row to Supabase. Replies and notifications go out via Resend.
 
-**Tech Stack:** Cloudflare Email Workers (JS, wrangler, vitest), n8n (HTTP Request + Code nodes), Supabase Postgres (service-role), OpenRouter (Mistral lean, BDS/privacy conscious), Cloudflare Email Sending.
+**Tech Stack:** Cloudflare Email Workers (JS, wrangler, vitest), n8n (HTTP Request + Code nodes), Supabase Postgres (service-role), OpenRouter (Mistral lean, BDS/privacy conscious), Resend.
 
 ## Global Constraints
 
@@ -157,38 +157,32 @@ After Task 5, send a test email to `dev@` from an allowlisted address and confir
 
 ---
 
-## Task 3: Cloudflare Email Sending (outbound)
+## Task 3: Resend outbound domain
 
-Infrastructure. Verification replaces unit tests. Requires the Workers Paid plan
-(Email Sending is public beta, paid-plan only, ~$5/mo); inbound Email Routing stays free.
-Account id `e1a40cc571c50a49a7638fba849ebdaa`, zone `3fa3742225b81582bba9e01bb63cf7c9`.
+Infrastructure. Verification replaces unit tests.
 
-- [ ] **Step 1: Confirm Workers Paid is enabled (Ibrahim, billing)**
+- [ ] **Step 1: Create/confirm the Resend account and add the domain**
 
-Email Sending requires the Workers Paid plan. Do not enable billing without Ibrahim's explicit OK.
+Add `cafepalestinecolonia.de` (or subdomain `send.cafepalestinecolonia.de`) as a sending domain in Resend. Use a subdomain for the Return-Path/SPF to avoid colliding with the Cloudflare routing SPF on the root.
 
-- [ ] **Step 2: Onboard the sending domain (cf-bounce subdomain)**
+- [ ] **Step 2: Add Resend's DNS records via Cloudflare MCP**
 
-Dashboard: Compute > Email Service > Email Sending > Onboard Domain. Or API
-`POST /zones/{zone}/email/sending/subdomains`. This adds the cf-bounce MX, SPF, and DKIM
-records and aligns DMARC. Verify with `GET /zones/{zone}/email/sending/subdomains/{id}/dns/status`.
+Add the DKIM CNAME/TXT and the SPF/Return-Path records Resend provides, on the subdomain. Do not modify the root MX (Cloudflare routing owns inbound).
 
-- [ ] **Step 3: Create a scoped API token for sending**
+- [ ] **Step 3: Verify domain in Resend**
 
-Create a Cloudflare API token with `Email Sending: Edit` (account-scoped). Store it in
-1Password and add it as the n8n credential used by the send nodes. This is SEPARATE from
-the MCP token (which lacks Email Sending permission).
+Confirm Resend shows the domain "Verified".
 
-- [ ] **Step 4: Send a test email via the REST API**
+- [ ] **Step 4: Send a test email from the API**
 
 ```bash
-curl -s "https://api.cloudflare.com/client/v4/accounts/e1a40cc571c50a49a7638fba849ebdaa/email/sending/send" \
-  -H "Authorization: Bearer $CF_EMAIL_TOKEN" -H 'Content-Type: application/json' \
-  -d '{"from":"Cafe Palestina <dev@cafepalestinecolonia.de>","to":"tech@ibrahimjarrar.com","subject":"agent test","html":"<p>hello</p>","text":"hello"}'
+curl -s https://api.resend.com/emails -H "Authorization: Bearer $RESEND_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"from":"Cafe Palestina <dev@cafepalestinecolonia.de>","to":"tech@ibrahimjarrar.com","subject":"agent test","text":"hello"}'
 ```
-Expected: success; the mail arrives and passes SPF/DKIM (check headers).
+Expected: 200 with an `id`; the mail arrives and passes SPF/DKIM (check headers).
 
-- [ ] **Step 5: Record the token name in 1Password + the agent README**
+- [ ] **Step 5: Store the API key in 1Password and note it for the n8n credential (Task 6)**
 
 ---
 
@@ -383,7 +377,7 @@ git commit -m "feat(agent): email worker with allowlist, dmarc check, smtp rejec
 
 ## Task 6: n8n workflow (the brain)
 
-Built in the n8n UI at n8n.deadthrone.dev, then exported to `agent/n8n/workflow.json`. LLM calls are HTTP Request nodes to OpenRouter (`POST https://openrouter.ai/api/v1/chat/completions`, `response_format: {type:"json_object"}`). Supabase calls are HTTP Request nodes to the REST API (`https://scctrpnoisvehdnspoej.supabase.co/rest/v1/...`) with the service-role key, or the Supabase node. Replies via HTTP Request to Cloudflare Email Sending. Credentials (OpenRouter, Supabase service-role, Cloudflare Email Sending, webhook token) are stored as encrypted n8n credentials.
+Built in the n8n UI at n8n.deadthrone.dev, then exported to `agent/n8n/workflow.json`. LLM calls are HTTP Request nodes to OpenRouter (`POST https://openrouter.ai/api/v1/chat/completions`, `response_format: {type:"json_object"}`). Supabase calls are HTTP Request nodes to the REST API (`https://scctrpnoisvehdnspoej.supabase.co/rest/v1/...`) with the service-role key, or the Supabase node. Replies via HTTP Request to Resend. Credentials (OpenRouter, Supabase service-role, Resend, webhook token) are stored as encrypted n8n credentials.
 
 This task is verified by the end-to-end run in Task 7. Build the nodes in this order; commit the exported JSON at the end.
 
@@ -427,7 +421,7 @@ Rules:
 
 - [ ] **Step 5: out_of_scope -> forward + reply**
 
-If intent is out_of_scope: HTTP Request to Cloudflare Email Sending to forward the original email to Ibrahim and Alaa (subject `Fwd (agent): <subject>`, body includes original from/subject/text), AND reply to the sender in `replyLang`:
+If intent is out_of_scope: HTTP Request to Resend to forward the original email to Ibrahim and Alaa (subject `Fwd (agent): <subject>`, body includes original from/subject/text), AND reply to the sender in `replyLang`:
 - de: "Ich kann nur Veranstaltungen und Blogbeitraege anlegen. Ich habe deine Nachricht an Ibrahim und Alaa weitergeleitet."
 - en: "I can only create events and blog posts. I have forwarded your message to Ibrahim and Alaa."
 Then notify Ibrahim (Step 11) and end.
@@ -480,7 +474,7 @@ Code node generates a `ref_code` (6-char base36) and a slug:
 const refCode = Math.random().toString(36).slice(2, 8); // (use crypto in final)
 function slugify(s){return s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"").slice(0,60);}
 ```
-Then Supabase POST to `agent_pending_actions` with `{ref_code, type, sender_email, source_lang:"de", reply_lang, payload, status:"pending"}`. Then Cloudflare Email Sending reply to the sender in `replyLang`, subject `Re: <orig> [#<refCode>]`, body showing the proposed content in all three languages and: "Antworte mit OK zum Veroeffentlichen, oder schicke Korrekturen." / "Reply OK to publish, or send corrections." Store the Cloudflare Email Sending Message-ID back into the row's `message_id`.
+Then Supabase POST to `agent_pending_actions` with `{ref_code, type, sender_email, source_lang:"de", reply_lang, payload, status:"pending"}`. Then Resend reply to the sender in `replyLang`, subject `Re: <orig> [#<refCode>]`, body showing the proposed content in all three languages and: "Antworte mit OK zum Veroeffentlichen, oder schicke Korrekturen." / "Reply OK to publish, or send corrections." Store the Resend Message-ID back into the row's `message_id`.
 
 - [ ] **Step 8: Reply path - classify the reply**
 
@@ -510,7 +504,7 @@ Then PATCH the pending row `status:"published", result_slug:<slug>`. Reply to se
 
 - [ ] **Step 11: Notify Ibrahim + error handling**
 
-After every terminal action (published, forwarded, cancelled) send Ibrahim a short notification email via Cloudflare Email Sending. Wrap the workflow with an error path: on any node failure, reply to the sender ("Etwas ist schiefgelaufen, Ibrahim wurde informiert." / "Something went wrong, Ibrahim has been notified.") and email Ibrahim the error detail + the input payload.
+After every terminal action (published, forwarded, cancelled) send Ibrahim a short notification email via Resend. Wrap the workflow with an error path: on any node failure, reply to the sender ("Etwas ist schiefgelaufen, Ibrahim wurde informiert." / "Something went wrong, Ibrahim has been notified.") and email Ibrahim the error detail + the input payload.
 
 - [ ] **Step 12: Export and commit**
 
@@ -559,6 +553,6 @@ git commit -m "docs(agent): runbook, secrets map, model + dns records"
 
 ## Self-Review notes
 
-- Spec coverage: inbound (Task 2,5), brain (Task 6), writes (Task 1,6,9), Cloudflare Email Sending (Task 3), model+BDS (Task 4), security/guardrails (Task 5 worker + Task 6 prompts), state table (Task 1), reporting/errors (Task 6 Step 11), ops/README (Task 7). All spec sections map to a task.
+- Spec coverage: inbound (Task 2,5), brain (Task 6), writes (Task 1,6,9), Resend (Task 3), model+BDS (Task 4), security/guardrails (Task 5 worker + Task 6 prompts), state table (Task 1), reporting/errors (Task 6 Step 11), ops/README (Task 7). All spec sections map to a task.
 - Open confirmations folded into tasks: Alaa's email address (Global Constraints + Task 5 Step 2 TODO); exact slug parity with `lib/blog.ts`/`lib/events.ts` (Task 6 Step 7 - mirror the repo helper rather than the placeholder slugify).
 - Adaptation flagged: TDD steps are real for the Worker (Task 5) and the migration (Task 1). Infra/config tasks (2,3,4,6) use build-then-verify checks instead of unit tests, by nature.
