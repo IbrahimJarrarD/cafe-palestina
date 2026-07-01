@@ -56,6 +56,44 @@ Built in-house mirroring the events CMS. Key files: migration `009_blog_posts.sq
 
 - An address only she emails that sets up events / makes site changes for her. Likely on Ibrahim's VPS. Data is in Supabase so the agent writes via API. Separate effort.
 
+### Email architecture hand-off (from life planner, 2026-07-01)
+
+Ibrahim clarified the cafe email must **send AND receive** (not a noreply), from a
+real address. This is bigger than the outbound-only Resend setup the life repo uses.
+Resend is **outbound-only** — it cannot receive. "Send and receive both" needs an
+**inbound mailbox** behind the address. Three viable options (cafe agent + Ibrahim
+to decide):
+
+1. **Cloudflare Email Routing (inbound) + Resend (outbound).** Cafe already has
+   Cloudflare Email Routing set up (per the life repo HANDOFF). It *forwards*
+   `cafe@<domain>` to a real mailbox (e.g. Ibrahim's tech@). Outbound via Resend
+   from the same address. Cheap/free. Limitation: Email Routing only forwards — you
+   can't reply *from* `cafe@` natively through the forwarded inbox unless that
+   inbox supports send-as with SMTP. Good if Suraya mostly receives and the agent
+   replies via the forwarded inbox.
+2. **A real cheap inbox (MXroute ~$19/yr or Migadu ~$19/yr)** at
+   `cafe@cafepalestinecolonia.de`. Full send+receive over IMAP/SMTP. Outbound can
+   go through Resend OR the inbox's own SMTP. **Best fit for "send and receive
+   both, not noreply, address replies are real."** The agent can read inbound via
+   IMAP and send via SMTP/Resend.
+3. **Self-hosted mailbox** (Mailcow/Stalwart on the VPS) — most control, most
+   maintenance. Overkill unless Ibrahim wants it.
+
+Constraints to carry forward:
+- **Resend plan = 1 domain max** on the life account (already used by
+  `deadthrone.dev`). The cafe cannot share that Resend account for outbound from
+  `cafepalestinecolonia.de`. The cafe needs **its own Resend account** (free tier)
+  for outbound, OR uses the inbox's own SMTP (option 2, no Resend needed at all).
+- The cafe domain `cafepalestinecolonia.de` IS on Cloudflare (NS: robin/houston)
+  but the life repo's Cloudflare API token is **zone-scoped to `deadthrone.dev`
+  only** — cafe DNS work needs a separate CF token scoped to the cafe zone.
+- Deliverability: fresh domains land in spam initially. DMARC (`p=none` monitor),
+  SPF, DKIM, and warmup (gradual volume + "not spam" marks) are the fixes. See
+  the life repo's `docs/secrets-registry.md` "Known limits" for the pattern used.
+
+Decision needed: which option (1/2/3), and the exact `cafe@` address. Then the
+agent build proceeds against Supabase (events/site changes) + the chosen mailbox.
+
 ## Open / deferred (lower priority)
 
 - Hero "Link to Event" announcements fall back to `#events` (no per-event page; a modal deep-link is deferred, ties into events work).
