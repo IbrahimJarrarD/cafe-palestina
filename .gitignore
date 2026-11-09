@@ -29,3 +29,7 @@ HANDOVER.md
 
 # local claude settings (personal permissions)
 .claude/settings.local.json
+
+# test output
+test-results/
+playwright-report/
