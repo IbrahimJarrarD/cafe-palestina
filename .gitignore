@@ -32,3 +32,5 @@ HANDOVER.md
 
 # subagent-driven-development scratch (ledger, review packages, reports)
 .superpowers/
+test-results/
+playwright-report/
