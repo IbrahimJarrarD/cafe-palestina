@@ -41,7 +41,7 @@
     const timer = setTimeout(() => {
       if (!settled) {
         checking = false;
-        error = 'This link is invalid or has expired. Ask an admin to send a new invite.';
+        error = 'This link is invalid or has expired. Request a new one via "Forgot password?" on the login page.';
       }
       sub.subscription.unsubscribe();
     }, 5000);

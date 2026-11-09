@@ -53,8 +53,11 @@ if (session) {
           >
         </div>
         
+        <button type="button" class="forgot-link" id="forgotBtn">Forgot password?</button>
+
         <div id="errorMessage" class="error-message" style="display: none;"></div>
-        
+        <div id="infoMessage" class="info-message" style="display: none;"></div>
+
         <button type="submit" class="login-btn" id="submitBtn">
           <span class="btn-text">Sign In</span>
           <span class="btn-loading" style="display: none;">Signing in...</span>
@@ -68,14 +71,41 @@ if (session) {
   </div>
   
   <script>
-    import { signIn } from '../../lib/auth';
-    
+    import { signIn, requestPasswordReset } from '../../lib/auth';
+
     const form = document.getElementById('loginForm') as HTMLFormElement;
     const errorDiv = document.getElementById('errorMessage') as HTMLDivElement;
     const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
     const btnText = submitBtn.querySelector('.btn-text') as HTMLSpanElement;
     const btnLoading = submitBtn.querySelector('.btn-loading') as HTMLSpanElement;
-    
+    const forgotBtn = document.getElementById('forgotBtn') as HTMLButtonElement;
+    const infoDiv = document.getElementById('infoMessage') as HTMLDivElement;
+
+    forgotBtn.addEventListener('click', async () => {
+      const emailInput = document.getElementById('email') as HTMLInputElement;
+      errorDiv.style.display = 'none';
+      infoDiv.style.display = 'none';
+
+      if (!emailInput.value || !emailInput.checkValidity()) {
+        errorDiv.textContent = 'Enter your email above, then click "Forgot password?" again.';
+        errorDiv.style.display = 'block';
+        emailInput.focus();
+        return;
+      }
+
+      forgotBtn.disabled = true;
+      const result = await requestPasswordReset(emailInput.value);
+      forgotBtn.disabled = false;
+
+      if (result.success) {
+        infoDiv.textContent = 'If that email has an account, a reset link is on its way. Check your inbox (and spam).';
+        infoDiv.style.display = 'block';
+      } else {
+        errorDiv.textContent = result.error || 'Could not send the reset email. Try again in a few minutes.';
+        errorDiv.style.display = 'block';
+      }
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -218,6 +248,37 @@ if (session) {
     text-align: center;
   }
   
+  .info-message {
+    padding: 0.875rem;
+    background: #f0f7ec;
+    border: 1px solid #c9dcb6;
+    border-radius: 8px;
+    color: var(--pine);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  .forgot-link {
+    align-self: flex-end;
+    margin-top: -0.5rem;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--pine);
+    cursor: pointer;
+  }
+
+  .forgot-link:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+
+  .forgot-link:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
   .login-btn {
     padding: 1rem;
     background: linear-gradient(135deg, var(--pine) 0%, var(--pine-light) 100%);

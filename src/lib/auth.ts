@@ -28,6 +28,18 @@ export async function setPassword(password: string) {
   return { success: true };
 }
 
+// Email a password-reset link. The link lands on /admin/set-password, which
+// already handles the recovery session.
+export async function requestPasswordReset(email: string) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/admin/set-password`,
+  });
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  return { success: true };
+}
+
 // Sign out
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
